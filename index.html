@@ -328,10 +328,34 @@
 		const container = document.getElementById('items-list');
 		if (container) container.innerHTML = '<div class="no-results">Caricamento...</div>';
 		try {
-			const results = await Promise.all(SEZIONI.map(s => fetch(s.file).then(r => {
-				if (!r.ok) throw new Error(s.file + ' -> ' + r.status);
-				return r.json();
-			})));
+			const results = await Promise.allSettled(
+				SEZIONI.map(s =>
+					fetch(s.file)
+						.then(r => {
+							if (!r.ok) throw new Error(s.file + ' -> ' + r.status);
+							return r.text().then(txt => {
+								try {
+									return JSON.parse(txt);
+								} catch (e) {
+									console.error("Errore JSON nel file:", s.file);
+									console.error(e);
+									throw e;
+								}
+							});
+						})
+				)
+			);
+			
+			results.forEach((result, i) => {
+				const section = SEZIONI[i];
+			
+				if (result.status === "fulfilled") {
+					dataStore[section.id] = result.value;
+				} else {
+					console.error("Errore caricamento:", section.file, result.reason);
+					dataStore[section.id] = [];
+				}
+			});
 			SEZIONI.forEach((s, i) => { dataStore[s.id] = results[i]; });
 		} catch (err) {
 			console.log('Errore caricamento dati:', err);
@@ -548,7 +572,7 @@
 	function showDetail(sezione, index, list, sections) {
 		currentSectionId = sezione;
 		currentList = list || dataStore[sezione];
-		currentDetailRef = { sezione, index };
+		currentDetailRef = { sezione, index, sections };
 		const item = currentList[index];
 		if (!item) return;
 		setLastItem(sezione, item.id);
@@ -844,7 +868,13 @@
 		if (window.location.protocol !== 'file:') {
 			const manifestLink = document.createElement('link'); manifestLink.rel='manifest'; manifestLink.href='manifest.json'; document.head.appendChild(manifestLink);
 			let newWorker;
-
+			window.agganciaAggiornamento = function () {
+				if (newWorker) {
+				newWorker.postMessage({
+				type: 'SKIP_WAITING'
+				});
+				}
+				};
 			if ('serviceWorker' in navigator) {
 				// Registriamo il service worker
 				navigator.serviceWorker.register('/sw.js').then(reg => {
