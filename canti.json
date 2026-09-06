@@ -7,17 +7,8 @@
 	"id": "Abba’ Misericordia"
   },
 	{
-    "titolo": "A Betlemme di Giudea - (Gloria in excelsis Deo)",
-    "testo": "A Betlemme di Giudea una gran luce si levò,
-nella notte sui pastori scese l’annuncio e si cantò:
-<b>“Gloria in excelsis Deo!” (2 v.)</b>
-
-Cristo nasce sulla paglia, figlio del Padre, «Dio-con-noi»;
-Verbo eterno, Re di pace, pone la tenda in mezzo ai suoi.
-<b>“Gloria in excelsis Deo!” (2 v.)</b>
-
-Tornerà nella sua gloria quando quel giorno arriverà;
-se lo accogli nel tuo cuore, tutto il suo regno ti darà. ",
+    "titolo": "A Betlemme di Giudea - (Gloria in excelsis Deo)", 
+    "testo": "A Betlemme di Giudea una gran luce si levò, \nnella notte sui pastori scese l’annuncio e si cantò: \n<b>“Gloria in excelsis Deo!” (2 v.)</b> \n\nCristo nasce sulla paglia, figlio del Padre, «Dio-con-noi»; \nVerbo eterno, Re di pace, pone la tenda in mezzo ai suoi. \n<b>“Gloria in excelsis Deo!” (2 v.)</b> \n\nTornerà nella sua gloria quando quel giorno arriverà; \nse lo accogli nel tuo cuore, tutto il suo regno ti darà. ",
     "categorie": ["Natale"],
     "youtube": "",
 	"id": "A Betlemme di Giudea - (Gloria in excelsis Deo)"
@@ -1460,7 +1451,7 @@ Strumentale
 	"id":  "Risanami (Koinonia)"
   },
   {
-	"titolo": "Ruah"
+	"titolo": "Ruah",
 	"testo": "<b>Ruah, ruah, ruah,
 Ruah, ruah, ruah.</b>
 
