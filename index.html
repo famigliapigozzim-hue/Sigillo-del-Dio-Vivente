@@ -362,7 +362,21 @@
 			if (container) container.innerHTML = '<div class="no-results">Impossibile caricare i dati. Controlla la connessione e riprova.<br><br><button class="btn-setting" onclick="loadAll().then(()=>{renderFilterChips();applyFilters();})">Riprova</button></div>';
 			return;
 		}
-		if (dataStore.messaggi) dataStore.messaggi.sort((a, b) => (a.data < b.data ? 1 : a.data > b.data ? -1 : 0));
+		console.log("MESSAGGI", dataStore.messaggi);
+		console.log("TIPO", typeof dataStore.messaggi);
+		console.log("ARRAY?", Array.isArray(dataStore.messaggi));
+		if (Array.isArray(dataStore.messaggi)) {
+		    dataStore.messaggi.sort((a, b) =>
+        	a.data < b.data ? 1 : a.data > b.data ? -1 : 0
+    		);
+		} else {
+    		console.error(
+        		"messaggi.json non restituisce un array",
+        	dataStore.messaggi
+    		);
+		
+    		dataStore.messaggi = [];
+		}
 		renderSectionPickerLabel();
 		renderFilterChips();
 		applyFilters();
