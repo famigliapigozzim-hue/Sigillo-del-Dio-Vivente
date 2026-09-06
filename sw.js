@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nel-sigillo-app-cache-v1';
+const CACHE_NAME = 'nel-sigillo-app-cache-v20260906-01';
 const ASSETS = [
     '/',
     '/index.html',
