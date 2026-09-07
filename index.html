@@ -348,7 +348,6 @@
 			
 			results.forEach((result, i) => {
 				const section = SEZIONI[i];
-			
 				if (result.status === "fulfilled") {
 					dataStore[section.id] = result.value;
 				} else {
@@ -356,28 +355,33 @@
 					dataStore[section.id] = [];
 				}
 			});
-			SEZIONI.forEach((s, i) => { dataStore[s.id] = results[i]; });
+	
+			// NOTA: La riga 'SEZIONI.forEach((s, i) => { dataStore[s.id] = results[i]; });' è stata rimossa!
+	
 		} catch (err) {
 			console.log('Errore caricamento dati:', err);
 			if (container) container.innerHTML = '<div class="no-results">Impossibile caricare i dati. Controlla la connessione e riprova.<br><br><button class="btn-setting" onclick="loadAll().then(()=>{renderFilterChips();applyFilters();})">Riprova</button></div>';
 			return;
 		}
+	
 		if (Array.isArray(dataStore.messaggi)) {
-			dataStore.messaggi.sort(
-			(a,b)=>(a.data < b.data ? 1 : -1)
+			dataStore.messaggi.sort((a, b) =>
+				a.data < b.data ? 1 : a.data > b.data ? -1 : 0
 			);
 		} else {
 			console.error(
-				"messaggi.json non contiene un array",
-			dataStore.messaggi
+				"messaggi.json non restituisce un array",
+				dataStore.messaggi
 			);
+			dataStore.messaggi = [];
 		}
+	
 		renderSectionPickerLabel();
 		renderFilterChips();
 		applyFilters();
 		applyFontSize();
 		updateFontSizeDisplay();
-
+	
 		const last = getLastItem();
 		if (last && localStorage.getItem('wasInDetailView') === 'true') {
 			const idx = (dataStore[last.sezione] || []).findIndex(it => it.id === last.id);
