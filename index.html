@@ -350,13 +350,19 @@
 				const section = SEZIONI[i];
 				if (result.status === "fulfilled") {
 					dataStore[section.id] = result.value;
+					if (Array.isArray(val)) {
+						dataStore[section.id] = val;
+					} else if (val && Array.isArray(val[section.id])) {
+						dataStore[section.id] = val[section.id];
+					} else {
+						console.error("Il file " + section.file + " non contiene un array valido.");
+						dataStore[section.id] = [];
+					}
 				} else {
 					console.error("Errore caricamento:", section.file, result.reason);
 					dataStore[section.id] = [];
 				}
 			});
-	
-			// NOTA: La riga 'SEZIONI.forEach((s, i) => { dataStore[s.id] = results[i]; });' è stata rimossa!
 	
 		} catch (err) {
 			console.log('Errore caricamento dati:', err);
@@ -472,8 +478,9 @@
 		if (!container || currentView !== 'sezione') { if (container) container.innerHTML=''; return; }
 		container.innerHTML = '';
 		const cfg = sezioneCfg(currentSectionId);
-		const items = dataStore[currentSectionId] || [];
-		const activeFilter = activeFilterBySection[currentSectionId] || null;
+		const rawData = dataStore[currentSectionId];
+		const items = Array.isArray(rawData) ? rawData : (rawData && Array.isArray(rawData[currentSectionId]) ? rawData[currentSectionId] : []);	
+			const activeFilter = activeFilterBySection[currentSectionId] || null;
 		const onlyFav = activeFilterBySection[currentSectionId + '_fav'] || false;
 
 		const allChip = document.createElement('button');
