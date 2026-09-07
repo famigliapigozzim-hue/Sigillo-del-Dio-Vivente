@@ -7,153 +7,338 @@
 <title>Nel Sigillo del Dio Vivente</title>
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
+	/* =========================================================
+	1. VARIABILI E TEMA BASE (CANTI / PREDEFINITO)
+	========================================================= */
 	:root {
-		--bg-primary: #f8fafc; --bg-secondary: #ffffff; --text-primary: #1e293b; --text-muted: #64748b;
-		--accent: #1e3a8a; --accent-hover: #1d4ed8; --border: #e2e8f0;
-		--card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-		--font-family-app: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-		--content-font-scale: 1;
+		--primary-color: #2563eb;
+		--primary-hover: #1d4ed8;
+		--primary-light: #eff6ff;
+		--primary-border: #bfdbfe;
+		
+		--badge-bg: #dbeafe;
+		--badge-text: #1e40af;
+		--header-bg: #1e40af;
+		--header-text: #ffffff;
+	
+		--bg-color: #f8fafc;
+		--card-bg: #ffffff;
+		--card-border: #e2e8f0;
+		--text-color: #1e293b;
+		--text-muted: #64748b;
+		
+		--font-size-base: 1rem;
+		--radius-sm: 6px;
+		--radius-md: 10px;
+		--radius-lg: 16px;
+		--shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+		--shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+		--transition-fast: 0.2s ease;
 	}
-	[data-theme="dark"] {
-		--bg-primary: #0f172a; --bg-secondary: #1e293b; --text-primary: #f8fafc; --text-muted: #94a3b8;
-		--accent: #3b82f6; --accent-hover: #60a5fa; --border: #334155;
-		--card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+	
+	/* =========================================================
+	2. VARIABILI PER SEZIONE (COLORI TENUI)
+	========================================================= */
+	body[data-section="messaggi"] {
+		--primary-color: #0284c7;
+		--primary-hover: #0369a1;
+		--primary-light: #f0f9ff;
+		--primary-border: #bae6fd;
+		--badge-bg: #e0f2fe;
+		--badge-text: #0369a1;
+		--header-bg: #0369a1;
 	}
-	[data-font="serif"] { --font-family-app: Georgia, "Times New Roman", "Noto Serif", "Liberation Serif", serif; }
-	* { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-family-app); -webkit-tap-highlight-color: transparent; }
-	body { background-color: var(--bg-primary); color: var(--text-primary); min-height: 100vh; padding-bottom: 2.5rem; }
-	header { background-color: var(--accent); color: white; padding: 0.9rem 1rem; position: sticky; top: 0; z-index: 50; box-shadow: var(--card-shadow); }
-	.header-container { display: flex; justify-content: space-between; align-items: center; max-width: 700px; margin: 0 auto; gap: 0.75rem; }
-	.section-picker { display: flex; align-items: center; gap: 0.4rem; background: rgba(255,255,255,0.12); border: none; color: white; padding: 0.45rem 0.7rem; border-radius: 0.5rem; font-weight: 700; font-size: 0.95rem; cursor: pointer; }
-	.section-picker .chev { font-size: 0.7rem; opacity: 0.8; }
-	.header-controls { display: flex; gap: 0.4rem; flex-shrink: 0; }
-	.btn-icon { background: none; border: none; color: white; font-size: 1.3rem; cursor: pointer; padding: 0.3rem; border-radius: 0.375rem; }
-	main { max-width: 700px; margin: 0 auto; padding: 1rem; }
+	
+	body[data-section="preghiere"] {
+		--primary-color: #7c3aed;
+		--primary-hover: #6d28d9;
+		--primary-light: #f5f3ff;
+		--primary-border: #ddd6fe;
+		--badge-bg: #ede9fe;
+		--badge-text: #5b21b6;
+		--header-bg: #5b21b6;
+	}
+	
+	/* =========================================================
+	3. MODALITÀ SCURA (DARK MODE)
+	========================================================= */
+	@media (prefers-color-scheme: dark) {
+		:root {
+			--bg-color: #0f172a;
+			--card-bg: #1e293b;
+			--card-border: #334155;
+			--text-color: #f1f5f9;
+			--text-muted: #94a3b8;
+			--shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+			--shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+
+			--primary-color: #3b82f6;
+			--primary-hover: #60a5fa;
+			--primary-light: rgba(59, 130, 246, 0.12);
+			--primary-border: #1d4ed8;
+			--badge-bg: #1e3a8a;
+			--badge-text: #93c5fd;
+			--header-bg: #0f172a;
+		}
+	
+		body[data-section="messaggi"] {
+			--primary-color: #38bdf8;
+			--primary-hover: #7dd3fc;
+			--primary-light: rgba(56, 189, 248, 0.12);
+			--primary-border: #0284c7;
+			--badge-bg: #0c4a6e;
+			--badge-text: #7dd3fc;
+			--header-bg: #0f172a;
+		}
+	
+		body[data-section="preghiere"] {
+			--primary-color: #a78bfa;
+			--primary-hover: #c4b5fd;
+			--primary-light: rgba(167, 139, 250, 0.12);
+			--primary-border: #6d28d9;
+			--badge-bg: #4c1d95;
+			--badge-text: #ddd6fe;
+			--header-bg: #0f172a;
+		}
+	}
+	
+	/* =========================================================
+	4. STILI GENERALI & RESET
+	========================================================= */
+	* {
+		box-sizing: border-box;
+		margin: 0;
+		padding: 0;
+		-webkit-tap-highlight-color: transparent;
+	}
+	
+	body {
+		font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+		background-color: var(--bg-color);
+		color: var(--text-color);
+		font-size: var(--font-size-base);
+		line-height: 1.5;
+		transition: background-color var(--transition-fast), color var(--transition-fast);
+	}
+	
+	/* =========================================================
+	5. HEADER & NAVIGAZIONE
+	========================================================= */
+	header {
+		position: sticky;
+		top: 0;
+		z-index: 100;
+		background-color: var(--header-bg);
+		color: var(--header-text);
+		padding: 0.75rem 1rem;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		box-shadow: var(--shadow-sm);
+		transition: background-color var(--transition-fast);
+	}
+	
+	.header-container {
+		width: 100%;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.section-picker {
+		background: transparent;
+		border: none;
+		color: inherit;
+		font-size: 1.1rem;
+		font-weight: 700;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+	}
+
+	.btn-icon {
+		background: transparent;
+		border: none;
+		color: inherit;
+		font-size: 1.25rem;
+		cursor: pointer;
+	}
+	
+	/* =========================================================
+	6. FILTRI E BARRA DI RICERCA
+	========================================================= */
+	.search-container {
+		padding: 0.75rem 1rem 0.25rem 1rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.search-row {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+	}
+	
+	.search-input {
+		width: 100%;
+		padding: 0.6rem 0.9rem;
+		border-radius: var(--radius-md);
+		border: 1px solid var(--card-border);
+		background: var(--card-bg);
+		color: var(--text-color);
+		font-size: 0.95rem;
+		outline: none;
+	}
+
+	.btn-toggle-filters {
+		background: var(--card-bg);
+		border: 1px solid var(--card-border);
+		color: var(--text-muted);
+		padding: 0.55rem 0.75rem;
+		border-radius: var(--radius-md);
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 1rem;
+	}
+	
+	.btn-toggle-filters.active {
+		background: var(--primary-light);
+		color: var(--primary-color);
+		border-color: var(--primary-border);
+	}
+	
+	.advanced-filters-row {
+		display: none;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		padding-top: 0.5rem;
+		border-top: 1px dashed var(--card-border);
+	}
+	
+	.advanced-filters-row.open {
+		display: flex;
+	}
+	
+	.filter-select {
+		flex: 1;
+		min-width: 120px;
+		padding: 0.45rem 0.6rem;
+		border-radius: var(--radius-md);
+		border: 1px solid var(--card-border);
+		background: var(--card-bg);
+		color: var(--text-color);
+		font-size: 0.85rem;
+		outline: none;
+	}
+
+	.scope-row {
+		display: flex;
+		gap: 0.5rem;
+		padding: 0.5rem 1rem;
+	}
+
+	.scope-chip {
+		flex: 1;
+		padding: 0.4rem;
+		border-radius: var(--radius-md);
+		border: 1px solid var(--card-border);
+		background: var(--card-bg);
+		color: var(--text-muted);
+		font-size: 0.85rem;
+		cursor: pointer;
+	}
+
+	.scope-chip.active {
+		background: var(--primary-light);
+		color: var(--primary-color);
+		border-color: var(--primary-border);
+		font-weight: 600;
+	}
+	
+	.filter-chips {
+		display: flex;
+		gap: 0.4rem;
+		overflow-x: auto;
+		padding: 0.2rem 1rem 0.5rem 1rem;
+	}
+
+	.filter-chip {
+		padding: 0.35rem 0.75rem;
+		border-radius: var(--radius-lg);
+		background: var(--card-bg);
+		border: 1px solid var(--card-border);
+		color: var(--text-muted);
+		font-size: 0.85rem;
+		white-space: nowrap;
+		cursor: pointer;
+	}
+
+	.filter-chip.active {
+		background: var(--primary-color);
+		color: #ffffff;
+		border-color: var(--primary-color);
+	}
+	
+	/* =========================================================
+	7. LISTA ELEMENTI E SCHERMATE
+	========================================================= */
+	#items-list {
+		padding: 0.5rem 1rem 2rem 1rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		max-width: 800px;
+		margin: 0 auto;
+	}
+	
+	.item-card {
+		background: var(--card-bg);
+		border: 1px solid var(--card-border);
+		border-radius: var(--radius-md);
+		padding: 0.9rem 1rem;
+		box-shadow: var(--shadow-sm);
+		cursor: pointer;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.item-card-info { flex: 1; display: flex; flex-direction: column; gap: 0.2rem; }
+	.item-card-meta { font-size: 0.8rem; color: var(--text-muted); }
+	.item-card-title { font-size: 1.05rem; font-weight: 600; color: var(--text-color); }
+	.item-card-snippet { font-size: 0.85rem; color: var(--text-muted); }
+	.item-badge { display: inline-block; font-size: 0.75rem; color: var(--badge-text); font-weight: 600; margin-bottom: 0.2rem; }
+	
+	.no-results { text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
+	
 	.view-section { display: none; }
 	.view-section.active { display: block; }
 
-	/* Dropdown menu sezioni */
-	.dropdown-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 250; }
+	#detail-view { max-width: 800px; margin: 0 auto; padding: 1rem 1rem 5rem 1rem; }
+	.detail-header { display: flex; justify-content: space-between; margin-bottom: 1rem; }
+	.btn-back { padding: 0.4rem 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--card-border); background: var(--card-bg); color: var(--text-color); cursor: pointer; }
+	#detail-body { font-size: calc(1rem * var(--content-font-scale, 1)); line-height: 1.7; white-space: pre-wrap; word-break: break-word; margin-top: 1rem; }
+
+	/* DROPDOWN & MODALE */
+	.dropdown-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); display: none; z-index: 150; }
 	.dropdown-overlay.active { display: block; }
-	.dropdown-menu {
-		position: absolute; top: 3.7rem; left: 1rem; background: var(--bg-secondary); border: 1px solid var(--border);
-		border-radius: 0.75rem; box-shadow: 0 10px 28px rgba(0,0,0,0.25); min-width: 240px; overflow: hidden;
-	}
-	.dropdown-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.8rem 1rem; cursor: pointer; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border); }
-	.dropdown-item:last-child { border-bottom: none; }
-	.dropdown-item.active { background-color: var(--bg-primary); color: var(--accent); }
-	.dropdown-item .count { margin-left: auto; font-size: 0.78rem; color: var(--text-muted); font-weight: 400; }
+	.dropdown-menu { position: absolute; top: 3.5rem; left: 1rem; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius-md); box-shadow: var(--shadow-md); width: 220px; overflow: hidden; }
+	.dropdown-item { padding: 0.75rem 1rem; display: flex; justify-content: space-between; cursor: pointer; border-bottom: 1px solid var(--card-border); }
+	.dropdown-item.active { background: var(--primary-light); color: var(--primary-color); font-weight: 600; }
 
-	/* Ricerca, ambito, filtri */
-	.search-container { margin-bottom: 0.6rem; }
-	.search-input { width: 100%; padding: 0.7rem 1rem; border: 1px solid var(--border); border-radius: 0.5rem; background-color: var(--bg-secondary); color: var(--text-primary); font-size: 1rem; }
-	.scope-row { display: flex; gap: 0.5rem; margin-bottom: 0.6rem; }
-	.scope-chip { flex: 1; text-align: center; background-color: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-muted); padding: 0.45rem; border-radius: 0.5rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
-	.scope-chip.active { background-color: var(--accent); border-color: var(--accent); color: white; }
-	.filter-chips { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 0.5rem; padding-bottom: 0.6rem; margin-bottom: 0.5rem; -webkit-overflow-scrolling: touch; }
-	.filter-chips::-webkit-scrollbar { display: none; }
-	.filter-chip { flex-shrink: 0; background-color: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-muted); padding: 0.4rem 0.9rem; border-radius: 1.2rem; font-size: 0.82rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
-	.filter-chip.active { background-color: var(--accent); border-color: var(--accent); color: white; }
-	.no-results { text-align: center; color: var(--text-muted); padding: 2.5rem 1rem; }
-
-	/* Card elemento nell'Indice */
-	.item-card { background-color: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1rem; margin-bottom: 0.75rem; cursor: pointer; box-shadow: var(--card-shadow); transition: transform 0.1s; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
-	.item-card:active { transform: scale(0.99); }
-	.item-card-info { overflow: hidden; flex-grow: 1; }
-	.item-badge { display: inline-block; font-size: 0.68rem; font-weight: 700; color: var(--accent); background: var(--bg-primary); border: 1px solid var(--border); border-radius: 1rem; padding: 0.05rem 0.5rem; margin-bottom: 0.3rem; }
-	.item-card-title { font-weight: 700; font-size: calc(1em * var(--content-font-scale)); color: var(--accent); }
-	.item-card-meta { font-size: calc(0.78em * var(--content-font-scale)); color: var(--text-muted); margin-bottom: 0.2rem; }
-	.item-card-snippet { font-size: calc(0.85em * var(--content-font-scale)); color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-	.item-card-actions { display: flex; flex-direction: column; gap: 0.4rem; flex-shrink: 0; }
-	.icon-btn { background: none; border: none; font-size: 1.25rem; line-height: 1; cursor: pointer; padding: 0.2rem; color: var(--text-muted); border-radius: 0.375rem; }
-	.icon-btn.is-favorite { color: #f5a623; }
-
-	/* Dettaglio elemento */
-	.detail-header { display: flex; justify-content: space-between; align-items: center; width: 100%; position: sticky; top: 0; background: var(--bg-primary); z-index: 40; padding: 0.5rem 0; }
-	.btn-back { background-color: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-primary); padding: 0.5rem 0.9rem; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-size: 0.9rem; }
-	.detail-meta { margin-top: 0.75rem; margin-bottom: 0.5rem; }
-	.detail-title { font-size: 1.3rem; font-weight: 700; color: var(--accent); }
-	.detail-subinfo { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.2rem; }
-	.detail-actions { display: flex; gap: 0.9rem; align-items: center; margin: 0.75rem 0 0.5rem 0; flex-wrap: wrap; }
-	.attach-btn { display: none; align-items: center; gap: 0.3rem; background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-primary); padding: 0.35rem 0.7rem; border-radius: 0.375rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
-	.attach-btn.active { display: flex; }
-	.item-text { font-size: calc(1.05rem * var(--content-font-scale)); line-height: 1.7; white-space: pre-wrap; word-wrap: break-word; margin-top: 0.5rem; }
-
-	/* Galleria immagini */
-	.gallery-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 400; align-items: center; justify-content: center; flex-direction: column; }
-	.gallery-overlay.active { display: flex; }
-	.gallery-overlay img { max-width: 92vw; max-height: 78vh; object-fit: contain; border-radius: 0.25rem; }
-	.gallery-controls { display: flex; align-items: center; gap: 1.5rem; margin-top: 1.2rem; }
-	.gallery-controls button { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.4); color: white; font-size: 1.3rem; width: 2.6rem; height: 2.6rem; border-radius: 50%; cursor: pointer; }
-	.gallery-close { position: absolute; top: 1.2rem; right: 1.2rem; color: white; font-size: 1.6rem; background: none; border: none; cursor: pointer; }
-	.gallery-counter { color: rgba(255,255,255,0.7); font-size: 0.85rem; margin-top: 0.6rem; }
-
-	/* Rosario */
-	.rosario-box { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.75rem; padding: 1.25rem; text-align: center; margin-top: 0.75rem; }
-	.rosario-misteri-title { font-weight: 700; color: var(--accent); margin-bottom: 0.6rem; }
-	.rosario-misteri-list { list-style: none; font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1rem; text-align: left; display: inline-block; }
-	.rosario-misteri-list li { padding: 0.15rem 0; }
-	.rosario-misteri-list li.corrente { color: var(--accent); font-weight: 700; }
-	.rosario-progress { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.3rem; }
-	.rosario-dots { display: flex; justify-content: center; gap: 0.35rem; margin-bottom: 1rem; }
-	.rosario-dot { width: 10px; height: 10px; border-radius: 50%; background-color: var(--border); }
-	.rosario-dot.filled { background-color: var(--accent); }
-	.rosario-tap-btn { background-color: var(--accent); color: white; border: none; padding: 1.1rem; border-radius: 0.75rem; font-size: 1.1rem; font-weight: 700; cursor: pointer; width: 100%; margin-bottom: 0.6rem; }
-	.rosario-reset { background: none; border: none; color: var(--text-muted); text-decoration: underline; font-size: 0.85rem; cursor: pointer; }
-	.rosario-complete { color: var(--accent); font-weight: 700; font-size: 1.15rem; margin: 0.5rem 0; }
-
-	/* Novena */
-	.novena-box { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.75rem; padding: 1.25rem; margin-top: 0.75rem; }
-	.novena-dots { display: flex; justify-content: center; gap: 0.4rem; margin-bottom: 1rem; flex-wrap: wrap; }
-	.novena-dot { width: 28px; height: 28px; border-radius: 50%; background-color: var(--bg-primary); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); }
-	.novena-dot.done { background-color: var(--accent); border-color: var(--accent); color: white; }
-	.novena-dot.current { border-color: var(--accent); color: var(--accent); }
-	.novena-day-title { text-align: center; font-weight: 700; color: var(--accent); margin-bottom: 0.5rem; }
-	.novena-day-text { font-size: calc(1rem * var(--content-font-scale)); line-height: 1.6; margin-bottom: 1rem; }
-	.novena-btn { background-color: var(--accent); color: white; border: none; padding: 0.8rem; border-radius: 0.5rem; font-weight: 700; cursor: pointer; width: 100%; margin-bottom: 0.5rem; }
-	.novena-btn.secondary { background-color: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border); }
-
-	/* Impostazioni (modale) */
-	.modal-overlay { display: none; position: fixed; inset: 0; background-color: rgba(0,0,0,0.5); z-index: 200; align-items: flex-end; justify-content: center; }
+	.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 200; padding: 1rem; }
 	.modal-overlay.active { display: flex; }
-	.modal-content { background-color: var(--bg-primary); width: 100%; max-width: 700px; max-height: 88vh; overflow-y: auto; border-radius: 1rem 1rem 0 0; padding: 1.25rem; }
-	.modal-title { font-size: 1.15rem; font-weight: 700; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; }
-	.setting-item { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--border); gap: 0.75rem; }
-	.btn-setting { background-color: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-primary); padding: 0.4rem 0.8rem; border-radius: 0.375rem; cursor: pointer; font-weight: 600; }
-	.font-size-value { display: inline-block; min-width: 3.2rem; text-align: center; font-weight: 600; color: var(--text-muted); font-size: 0.9rem; }
-	.switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
-	.switch input { opacity: 0; width: 0; height: 0; }
-	.switch .slider { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border); transition: 0.3s; border-radius: 24px; cursor: pointer; }
-	.switch .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: #fff; transition: 0.3s; border-radius: 50%; }
-	.switch input:checked + .slider { background-color: var(--accent); }
-	.switch input:checked + .slider:before { transform: translateX(20px); }
-	.switch input:disabled + .slider { opacity: 0.4; cursor: not-allowed; }
-	.setting-note { font-size: 0.78rem; color: var(--text-muted); margin-top: -0.4rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
-	.version-badge { color: var(--text-muted); font-size: 0.85rem; }
-	.last-item-row { display: none; flex-direction: column; align-items: flex-start; gap: 0.5rem; }
-	.last-item-row.active { display: flex; }
-	.last-link { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; width: 100%; background-color: var(--bg-primary); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 0.375rem; padding: 0.6rem 0.8rem; cursor: pointer; }
-	.last-link-title { font-weight: 600; color: var(--accent); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-	.install-item { display: none; }
-	.install-item.active { display: flex; }
-	.counts-list { font-size: 0.85rem; color: var(--text-muted); text-align: right; }
-
-	/* Banner aggiornamento */
-	.update-toast { position: fixed; left: 1rem; right: 1rem; bottom: 1rem; max-width: 500px; margin: 0 auto; background-color: var(--accent); color: white; border-radius: 0.6rem; padding: 0.9rem 1rem; display: none; align-items: center; justify-content: space-between; gap: 0.75rem; box-shadow: 0 6px 16px rgba(0,0,0,0.25); z-index: 300; cursor: pointer; }
-	.update-toast.active { display: flex; }
-	.update-toast-text { font-size: 0.9rem; line-height: 1.35; }
-	.update-toast-text strong { display: block; font-size: 0.95rem; margin-bottom: 0.1rem; }
-	.update-toast-btn { background-color: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 0.4rem 0.8rem; border-radius: 0.375rem; font-weight: 600; font-size: 0.85rem; white-space: nowrap; flex-shrink: 0; }
+	.modal-content { background: var(--card-bg); border-radius: var(--radius-lg); width: 100%; max-width: 480px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+	.setting-item { display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0; border-bottom: 1px solid var(--card-border); }
+	.btn-setting { padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); background: var(--primary-color); color: #fff; border: none; cursor: pointer; }
 </style>
 </head>
 <body>
-	<!-- Banner di aggiornamento PWA -->
-	<div id="update-banner" style="display: none; background-color: #1e3a8a; color: white; text-align: center; padding: 12px; position: fixed; top: 0; left: 0; width: 100%; z-index: 9999; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: sans-serif;">
-		<span>✨ Nuova versione disponibile con nuovi canti o messaggi!</span>
-		<button onclick="agganciaAggiornamento()" style="background-color: white; color: #1e3a8a; border: none; padding: 6px 12px; margin-left: 15px; border-radius: 4px; font-weight: bold; cursor: pointer;">
-			Aggiorna ora
-		</button>
-	</div>
 
 	<header>
 		<div class="header-container">
@@ -171,15 +356,31 @@
 	</div>
 
 	<main>
-		<!-- INDICE (lista dell'elemento corrente: sezione o preferiti globali) -->
+		<!-- INDICE -->
 		<div id="list-view" class="view-section active">
 			<div class="search-container">
-				<input type="text" id="search-bar" class="search-input" placeholder="Cerca..." oninput="applyFilters()">
+				<div class="search-row">
+					<input type="text" id="search-bar" class="search-input" placeholder="Cerca parola chiave nel testo..." oninput="applyFilters()">
+					<button type="button" id="btn-toggle-filters" class="btn-toggle-filters" onclick="toggleAdvancedFilters()" title="Filtri Avanzati" style="display: none;">⚙️</button>
+				</div>
+				<div id="advanced-filters" class="advanced-filters-row">
+					<select id="filter-mittente" class="filter-select" onchange="applyFilters()">
+						<option value="all">Tutti i mittenti</option>
+					</select>
+					<select id="filter-destinatario" class="filter-select" onchange="applyFilters()">
+						<option value="all">Tutti i destinatari</option>
+					</select>
+					<select id="filter-anno" class="filter-select" onchange="applyFilters()">
+						<option value="all">Tutti gli anni</option>
+					</select>
+				</div>
 			</div>
+			
 			<div class="scope-row" id="scope-row">
 				<button class="scope-chip active" id="scope-sezione" onclick="setScope('sezione')">🔍 Questa sezione</button>
 				<button class="scope-chip" id="scope-tutto" onclick="setScope('tutto')">🔍 Tutte le sezioni</button>
 			</div>
+			
 			<div class="filter-chips" id="filter-chips"></div>
 			<div id="items-list"></div>
 		</div>
@@ -195,112 +396,55 @@
 			</div>
 			<div class="detail-meta">
 				<div class="item-badge" id="detail-badge"></div>
-				<div class="detail-title" id="detail-title"></div>
+				<h2 class="detail-title" id="detail-title"></h2>
 				<div class="detail-subinfo" id="detail-subinfo"></div>
 			</div>
-			<div class="detail-actions">
-				<button class="icon-btn" id="btn-favorite-detail" onclick="toggleFavoriteCurrent()" title="Aggiungi ai preferiti">☆</button>
-				<button class="icon-btn" id="btn-share-detail" onclick="shareCurrent()" title="Condividi">📤</button>
-				<button class="attach-btn" id="btn-youtube" onclick="openYoutubeCurrent()">▶️ <span>YouTube</span></button>
-				<button class="attach-btn" id="btn-pdf" onclick="openPdfCurrent()">📄 <span id="pdf-label">PDF</span></button>
-				<button class="attach-btn" id="btn-gallery" onclick="openGallery()">🖼️ <span id="gallery-count">Foto</span></button>
+			<div class="detail-actions" style="margin-top:0.5rem;">
+				<button class="btn-back" id="btn-favorite-detail" onclick="toggleFavoriteCurrent()">☆ Preferito</button>
+				<button class="btn-back" id="btn-share-detail" onclick="shareCurrent()">📤 Condividi</button>
 			</div>
 			<div id="detail-body"></div>
 		</div>
 	</main>
 
-	<!-- GALLERIA IMMAGINI -->
-	<div class="gallery-overlay" id="gallery-overlay">
-		<button class="gallery-close" onclick="closeGallery()">✕</button>
-		<img id="gallery-img" src="" alt="">
-		<div class="gallery-controls">
-			<button onclick="galleryPrev()">◀</button>
-			<button onclick="galleryNext()">▶</button>
-		</div>
-		<div class="gallery-counter" id="gallery-counter"></div>
-	</div>
-
 	<!-- IMPOSTAZIONI -->
 	<div id="settings-modal" class="modal-overlay" onclick="closeSettingsOnOverlay(event)">
 		<div class="modal-content" onclick="event.stopPropagation()">
-			<div class="modal-title"><span>Impostazioni</span><button class="btn-icon" style="color: var(--text-primary);" onclick="closeSettings()">✕</button></div>
+			<div style="display:flex; justify-content:space-between; align-items:center;">
+				<h3>Impostazioni</h3>
+				<button class="btn-icon" style="color:var(--text-color);" onclick="closeSettings()">✕</button>
+			</div>
 
 			<div class="setting-item">
 				<span>Dimensione testo</span>
 				<div style="display:flex; align-items:center; gap:0.5rem;">
 					<button class="btn-setting" onclick="changeFontSize(-1)">A-</button>
-					<span class="font-size-value" id="font-size-value">100%</span>
+					<span id="font-size-value">100%</span>
 					<button class="btn-setting" onclick="changeFontSize(1)">A+</button>
 				</div>
 			</div>
-			<div class="setting-note">Puoi anche stringere/allargare le dita ("pinch") sul testo per cambiare la dimensione.</div>
 
 			<div class="setting-item">
-				<span>Stile del carattere<br><small style="color: var(--text-muted); font-weight: normal;">Sans / Serif</small></span>
-				<label class="switch"><input type="checkbox" id="fontfamily-toggle" onchange="onFontFamilyToggleChange()"><span class="slider"></span></label>
-			</div>
-
-			<div class="setting-item">
-				<span>Tema della pagina</span>
+				<span>Tema pagina</span>
 				<button class="btn-setting" onclick="toggleTheme()">🌓 Cambia</button>
-			</div>
-
-			<div class="setting-item">
-				<span>Schermo sempre attivo<br><small style="color: var(--text-muted); font-weight: normal;">durante la lettura del dettaglio</small></span>
-				<label class="switch"><input type="checkbox" id="wakelock-toggle" onchange="onWakeLockToggleChange()"><span class="slider"></span></label>
-			</div>
-			<div class="setting-note" id="wakelock-note" style="display:none;">Il tuo browser non supporta questa funzione.</div>
-
-			<div class="setting-item">
-				<span>Vibrazione al tap<br><small style="color: var(--text-muted); font-weight: normal;">leggero feedback quando tocchi i pulsanti</small></span>
-				<label class="switch"><input type="checkbox" id="vibration-toggle" onchange="onVibrationToggleChange()"><span class="slider"></span></label>
-			</div>
-			<div class="setting-note" id="vibration-note" style="display:none;">Il tuo dispositivo non supporta questa funzione.</div>
-
-			<div class="setting-item install-item" id="install-item">
-				<span>Installa l'app<br><small style="color: var(--text-muted); font-weight: normal;">per usarla anche offline</small></span>
-				<button class="btn-setting" onclick="installApp()">⬇️ Installa</button>
-			</div>
-
-			<div class="setting-item last-item-row" id="last-item-row">
-				<span style="font-size:0.85rem; color:var(--text-muted);">Ultimo aperto</span>
-				<div class="last-link" onclick="openLast()"><span class="last-link-title" id="last-title"></span><span>→</span></div>
-			</div>
-
-			<div class="setting-item">
-				<span>Numero totale elementi</span>
-				<span class="counts-list" id="counts-list">–</span>
-			</div>
-			<div class="setting-item">
-				<span>Versione App</span>
-				<span class="version-badge">Ver_2026-09-06</span>
 			</div>
 		</div>
 	</div>
 
-	<div class="update-toast" id="update-toast" onclick="applyUpdate()">
-		<div class="update-toast-text"><strong>Nuova versione disponibile</strong>Tocca per aggiornare l'app</div>
-		<span class="update-toast-btn">Aggiorna ora</span>
-	</div>
-
 <script>
-	// ============================================================
-	// REGISTRO SEZIONI: per aggiungere una sezione futura, basta
-	// aggiungere una voce qui (+ eventuale logica dedicata se il
-	// contenuto ha un comportamento speciale come rosario/novena)
-	// ============================================================
 	const SEZIONI = [
 		{ id: 'canti', badge: '📖', label: '📖 Canti', file: 'canti.json', filtroField: 'categorie', filtroTipo: 'array',
 		  titoloField: 'titolo', sottotitolo: (it) => '', searchFields: ['titolo', 'testo'] },
 		{ id: 'messaggi', badge: '☁️', label: '☁️ Messaggi', file: 'messaggi.json', filtroField: 'chiParla', filtroTipo: 'stringa',
-		  titoloField: 'chiParla', sottotitolo: (it) => it.dataDisplay + (it.destinatario ? ' — a ' + it.destinatario : '') + (it.luogo ? ' — ' + it.luogo : ''),
+		  titoloField: 'chiParla', sottotitolo: (it) => (it.dataDisplay || it.data || '') + (it.destinatario ? ' — a ' + it.destinatario : '') + (it.luogo ? ' — ' + it.luogo : ''),
 		  searchFields: ['chiParla', 'destinatario', 'luogo', 'dataDisplay', 'testo'] },
 		{ id: 'preghiere', badge: '🙏', label: '🙏 Preghiere', file: 'preghiere.json', filtroField: 'categoria', filtroTipo: 'stringa',
 		  titoloField: 'titolo', sottotitolo: (it) => it.categoria || '', searchFields: ['titolo', 'categoria', 'testo'] }
 	];
 
-	const DEFAULT_SETTINGS = { theme: 'light', fontSize: 1.05, fontFamily: 'sans', wakeLockEnabled: false, vibrationEnabled: true };
+	const DEFAULT_SETTINGS = { theme: 'light', fontSize: 1.05, vibrationEnabled: true };
 	const BASE_FONT_SIZE = DEFAULT_SETTINGS.fontSize;
+
 	function getSetting(key) {
 		const raw = localStorage.getItem(key);
 		if (raw === null) return DEFAULT_SETTINGS[key];
@@ -310,190 +454,317 @@
 	}
 	function setSetting(key, value) { localStorage.setItem(key, value); }
 
-	let dataStore = {};        // { canti: [...], messaggi: [...], preghiere: [...] }
+	let dataStore = {};
 	let currentSectionId = 'canti';
-	let currentView = 'sezione'; // 'sezione' | 'preferiti-globali'
-	let searchScope = 'sezione'; // 'sezione' | 'tutto'
+	let currentView = 'sezione';
+	let searchScope = 'sezione';
 	let activeFilterBySection = {};
-	let currentList = [];       // lista attualmente mostrata nel dettaglio (per prev/next)
-	let currentDetailRef = null; // { sezione, index-in-currentList }
+	let currentList = [];
+	let currentDetailRef = null;
 	let currentFontSize = getSetting('fontSize');
-	let wakeLockSentinel = null;
-	let swRegistration = null;
-	let deferredInstallPrompt = null;
-	let galleryImages = [];
-	let galleryIndex = 0;
+
+	// --- NORMALIZZAZIONE E FILTRI AVANZATI ---
+	function normalizeText(str) {
+		if (!str) return '';
+		return str.toString()
+			.toLowerCase()
+			.normalize("NFD")
+			.replace(/[\u0300-\u036f]/g, "")
+			.trim();
+	}
+
+	function toggleAdvancedFilters() {
+		vibrate();
+		const panel = document.getElementById('advanced-filters');
+		const btn = document.getElementById('btn-toggle-filters');
+		if (!panel || !btn) return;
+
+		const isOpen = panel.classList.toggle('open');
+		btn.classList.toggle('active', isOpen);
+	}
+
+	function updateAdvancedFiltersVisibility() {
+		const btn = document.getElementById('btn-toggle-filters');
+		const panel = document.getElementById('advanced-filters');
+		if (!btn) return;
+
+		if (currentSectionId === 'messaggi' || searchScope === 'tutto') {
+			btn.style.display = 'flex';
+		} else {
+			btn.style.display = 'none';
+			if (panel) panel.classList.remove('open');
+			if (btn) btn.classList.remove('active');
+			resetAdvancedSelects();
+		}
+	}
+
+	function resetAdvancedSelects() {
+		['filter-mittente', 'filter-destinatario', 'filter-anno'].forEach(id => {
+			const el = document.getElementById(id);
+			if (el) el.value = 'all';
+		});
+	}
+
+	function populateAdvancedFilters() {
+		const messaggi = dataStore.messaggi || [];
+		const mittenti = new Set();
+		const destinatari = new Set();
+		const anni = new Set();
+
+		messaggi.forEach(m => {
+			if (m.chiParla || m.mittente || m.autore) mittenti.add(m.chiParla || m.mittente || m.autore);
+			if (m.destinatario || m.ricevutoDa) destinatari.add(m.destinatario || m.ricevutoDa);
+			if (m.data || m.dataDisplay) {
+				const str = (m.data || '') + ' ' + (m.dataDisplay || '');
+				const matchAnno = str.match(/\b(19|20)\d{2}\b/);
+				if (matchAnno) anni.add(matchAnno[0]);
+			}
+		});
+
+		const selectMittente = document.getElementById('filter-mittente');
+		if (selectMittente) {
+			selectMittente.innerHTML = '<option value="all">Tutti i mittenti</option>' +
+				Array.from(mittenti).sort().map(m => `<option value="${m}">${m}</option>`).join('');
+		}
+
+		const selectDestinatario = document.getElementById('filter-destinatario');
+		if (selectDestinatario) {
+			selectDestinatario.innerHTML = '<option value="all">Tutti i destinatari</option>' +
+				Array.from(destinatari).sort().map(d => `<option value="${d}">${d}</option>`).join('');
+		}
+
+		const selectAnno = document.getElementById('filter-anno');
+		if (selectAnno) {
+			selectAnno.innerHTML = '<option value="all">Tutti gli anni</option>' +
+				Array.from(anni).sort((a,b) => b - a).map(a => `<option value="${a}">${a}</option>`).join('');
+		}
+	}
 
 	async function loadAll() {
 		const container = document.getElementById('items-list');
 		if (container) container.innerHTML = '<div class="no-results">Caricamento...</div>';
+		
 		try {
 			const results = await Promise.allSettled(
-				SEZIONI.map(s =>
-					fetch(s.file)
-						.then(r => {
-							if (!r.ok) throw new Error(s.file + ' -> ' + r.status);
-							return r.text().then(txt => {
-								try {
-									return JSON.parse(txt);
-								} catch (e) {
-									console.error("Errore JSON nel file:", s.file);
-									console.error(e);
-									throw e;
-								}
-							});
-						})
-				)
+				SEZIONI.map(s => fetch(s.file).then(r => r.json()))
 			);
 			
 			results.forEach((result, i) => {
 				const section = SEZIONI[i];
 				if (result.status === "fulfilled") {
-					dataStore[section.id] = result.value;
-					if (Array.isArray(val)) {
-						dataStore[section.id] = val;
-					} else if (val && Array.isArray(val[section.id])) {
-						dataStore[section.id] = val[section.id];
-					} else {
-						console.error("Il file " + section.file + " non contiene un array valido.");
-						dataStore[section.id] = [];
-					}
+					const val = result.value;
+					dataStore[section.id] = Array.isArray(val) ? val : (val[section.id] || []);
 				} else {
-					console.error("Errore caricamento:", section.file, result.reason);
 					dataStore[section.id] = [];
 				}
 			});
-	
 		} catch (err) {
-			console.log('Errore caricamento dati:', err);
-			if (container) container.innerHTML = '<div class="no-results">Impossibile caricare i dati. Controlla la connessione e riprova.<br><br><button class="btn-setting" onclick="loadAll().then(()=>{renderFilterChips();applyFilters();})">Riprova</button></div>';
+			if (container) container.innerHTML = '<div class="no-results">Errore caricamento dati.</div>';
 			return;
 		}
-	
-		if (Array.isArray(dataStore.messaggi)) {
-			dataStore.messaggi.sort((a, b) =>
-				a.data < b.data ? 1 : a.data > b.data ? -1 : 0
-			);
-		} else {
-			console.error(
-				"messaggi.json non restituisce un array",
-				dataStore.messaggi
-			);
-			dataStore.messaggi = [];
-		}
-	
+
+		populateAdvancedFilters();
+		updateAdvancedFiltersVisibility();
 		renderSectionPickerLabel();
 		renderFilterChips();
 		applyFilters();
+		document.body.setAttribute('data-section', currentSectionId);
 		applyFontSize();
-		updateFontSizeDisplay();
-	
-		const last = getLastItem();
-		if (last && localStorage.getItem('wasInDetailView') === 'true') {
-			const idx = (dataStore[last.sezione] || []).findIndex(it => it.id === last.id);
-			if (idx !== -1) {
-				currentSectionId = last.sezione;
-				currentList = dataStore[last.sezione];
-				showDetail(last.sezione, idx, currentList);
-			}
-		}
 	}
 
-	function normalizeText(text) { return (text || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); }
 	function sezioneCfg(id) { return SEZIONI.find(s => s.id === id); }
-	function itemTitolo(sezioneId, item) { const cfg = sezioneCfg(sezioneId); return item[cfg.titoloField] || ''; }
+	function itemTitolo(sezioneId, item) { const cfg = sezioneCfg(sezioneId); return item[cfg ? cfg.titoloField : 'titolo'] || ''; }
 
-	// --- DROPDOWN NAVIGAZIONE ---
-	function renderDropdown() {
-		const menu = document.getElementById('dropdown-menu');
-		menu.innerHTML = '';
-		SEZIONI.forEach(s => {
-			const el = document.createElement('div');
-			el.className = 'dropdown-item' + (currentView === 'sezione' && currentSectionId === s.id ? ' active' : '');
-			const cnt = (dataStore[s.id] || []).length;
-			el.innerHTML = '<span>' + s.label + '</span><span class="count">' + cnt + '</span>';
-			el.onclick = () => { vibrate(); switchSection(s.id); closeDropdown(); };
-			menu.appendChild(el);
+	function applyFilters() {
+		if (currentView === 'preferiti-globali') { 
+			renderPreferitiGlobali(); 
+			return; 
+		}
+
+		const query = normalizeText(document.getElementById('search-bar')?.value.trim() || '');
+		const selectedMittente = document.getElementById('filter-mittente')?.value || 'all';
+		const selectedDestinatario = document.getElementById('filter-destinatario')?.value || 'all';
+		const selectedAnno = document.getElementById('filter-anno')?.value || 'all';
+
+		function matchesItem(item, sectionConfig) {
+			if (selectedMittente !== 'all') {
+				const itemMittente = normalizeText(item.chiParla || item.mittente || item.autore || '');
+				if (itemMittente !== normalizeText(selectedMittente)) return false;
+			}
+
+			if (selectedDestinatario !== 'all') {
+				const itemDestinatario = normalizeText(item.destinatario || item.ricevutoDa || '');
+				if (itemDestinatario !== normalizeText(selectedDestinatario)) return false;
+			}
+
+			if (selectedAnno !== 'all') {
+				const itemDateStr = (item.data || '') + ' ' + (item.dataDisplay || '');
+				if (!itemDateStr.includes(selectedAnno)) return false;
+			}
+
+			if (query) {
+				const extraFields = ['testo', 'corpo', 'chiParla', 'destinatario', 'autore'];
+				const allSearchFields = Array.from(new Set([...(sectionConfig.searchFields || []), ...extraFields]));
+				const hay = allSearchFields.map(f => normalizeText(item[f] || '')).join(' ');
+				if (!hay.includes(query)) return false;
+			}
+
+			return true;
+		}
+
+		if (searchScope === 'tutto') {
+			let results = []; 
+			let resultSections = [];
+
+			SEZIONI.forEach(s => {
+				(dataStore[s.id] || []).forEach(it => {
+					if (matchesItem(it, s)) {
+						results.push(it);
+						resultSections.push(s.id);
+					}
+				});
+			});
+
+			renderList(results, resultSections);
+			return;
+		}
+
+		const currentSec = SEZIONI.find(s => s.id === currentSectionId) || { searchFields: [] };
+		let currentItems = dataStore[currentSectionId] || [];
+
+		// Filtro Categoria/Chip attivo
+		const activeFilter = activeFilterBySection[currentSectionId] || null;
+		if (activeFilter) {
+			currentItems = currentItems.filter(it => 
+				currentSec.filtroTipo === 'array' ? (it[currentSec.filtroField] || []).includes(activeFilter) : it[currentSec.filtroField] === activeFilter
+			);
+		}
+
+		const filtered = currentItems.filter(it => matchesItem(it, currentSec));
+		renderList(filtered, filtered.map(() => currentSectionId));
+	}
+
+	function renderList(items, sections) {
+		const container = document.getElementById('items-list');
+		container.innerHTML = '';
+		if (!items || items.length === 0) { 
+			container.innerHTML = '<div class="no-results">Nessun risultato trovato.</div>'; 
+			return; 
+		}
+		
+		currentList = items;
+		const showBadge = searchScope === 'tutto' || currentView === 'preferiti-globali';
+
+		items.forEach((item, idx) => {
+			const sezione = sections ? sections[idx] : currentSectionId;
+			const cfg = sezioneCfg(sezione);
+			const card = document.createElement('div');
+			card.className = 'item-card';
+			card.onclick = () => { vibrate(); showDetail(sezione, idx, items, sections); };
+
+			const info = document.createElement('div');
+			info.className = 'item-card-info';
+			
+			if (showBadge && cfg) { 
+				const b = document.createElement('div'); 
+				b.className = 'item-badge'; 
+				b.textContent = cfg.badge + ' ' + cfg.label.replace(/^\S+\s/, ''); 
+				info.appendChild(b); 
+			}
+
+			const titleEl = document.createElement('div'); 
+			titleEl.className = 'item-card-title'; 
+			titleEl.textContent = itemTitolo(sezione, item);
+
+			const metaEl = document.createElement('div'); 
+			metaEl.className = 'item-card-meta'; 
+			metaEl.textContent = cfg ? cfg.sottotitolo(item) : '';
+
+			const snippetEl = document.createElement('div'); 
+			snippetEl.className = 'item-card-snippet';
+			snippetEl.textContent = (item.testo || item.corpo || '').replace(/\s+/g, ' ').slice(0, 100) + '...';
+
+			info.appendChild(titleEl); 
+			info.appendChild(metaEl); 
+			info.appendChild(snippetEl);
+
+			card.appendChild(info);
+			container.appendChild(card);
 		});
-		const favEl = document.createElement('div');
-		favEl.className = 'dropdown-item' + (currentView === 'preferiti-globali' ? ' active' : '');
-		favEl.innerHTML = '<span>★ Tutti i Preferiti</span><span class="count">' + getFavorites().length + '</span>';
-		favEl.onclick = () => { vibrate(); showPreferitiGlobali(); closeDropdown(); };
-		menu.appendChild(favEl);
 	}
-	function toggleDropdown() {
+
+	function showDetail(sezione, idx, list, sections) {
+		if (!list || idx < 0 || idx >= list.length) return;
+		
+		const realSection = (sections && sections[idx]) ? sections[idx] : sezione;
+		currentSectionId = realSection;
+		currentList = list;
+		currentDetailRef = { sezione: realSection, index: idx };
+
+		const item = list[idx];
+		if (!item) return;
+
+		const cfg = sezioneCfg(realSection);
+		document.getElementById('detail-title').textContent = itemTitolo(realSection, item);
+		document.getElementById('detail-subinfo').textContent = cfg ? cfg.sottotitolo(item) : '';
+		document.getElementById('detail-badge').textContent = cfg ? (cfg.badge + ' ' + cfg.label) : '';
+		document.getElementById('detail-body').innerHTML = item.testo || item.corpo || '';
+
+		document.getElementById('btn-prev').disabled = (idx <= 0);
+		document.getElementById('btn-next').disabled = (idx >= list.length - 1);
+
+		document.getElementById('list-view').style.display = 'none';
+		const detailView = document.getElementById('detail-view');
+		detailView.style.display = 'block';
+		window.scrollTo({ top: 0, behavior: 'instant' });
+	}
+
+	function showListView() {
 		vibrate();
-		renderDropdown();
-		document.getElementById('dropdown-overlay').classList.toggle('active');
+		document.getElementById('detail-view').style.display = 'none';
+		document.getElementById('list-view').style.display = 'block';
 	}
-	function closeDropdown() { document.getElementById('dropdown-overlay').classList.remove('active'); }
-	function renderSectionPickerLabel() {
-		const label = document.getElementById('section-picker-label');
-		if (currentView === 'preferiti-globali') { label.textContent = '★ Preferiti'; return; }
-		const cfg = sezioneCfg(currentSectionId);
-		label.textContent = cfg ? cfg.label : '';
-	}
-	function switchSection(id) {
-		currentSectionId = id;
+
+	function switchSection(sezione) {
+		if (!SEZIONI.some(s => s.id === sezione)) return;
+		currentSectionId = sezione;
 		currentView = 'sezione';
-		searchScope = 'sezione';
+
+		document.body.setAttribute('data-section', sezione);
 		document.getElementById('search-bar').value = '';
-		document.getElementById('scope-row').style.display = 'flex';
-		setScopeUI();
+		resetAdvancedSelects();
+		updateAdvancedFiltersVisibility();
+		
+		showListView();
 		renderSectionPickerLabel();
-		document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-		document.getElementById('list-view').classList.add('active');
-		releaseWakeLock();
 		renderFilterChips();
 		applyFilters();
 	}
-	function showPreferitiGlobali() {
-		currentView = 'preferiti-globali';
-		document.getElementById('search-bar').value = '';
-		document.getElementById('scope-row').style.display = 'none';
-		document.getElementById('filter-chips').innerHTML = '';
-		renderSectionPickerLabel();
-		showListView(true);
-		renderPreferitiGlobali();
-	}
-	function renderPreferitiGlobali() {
-		const favs = getFavorites();
-		const items = favs.map(f => {
-			const it = (dataStore[f.sezione] || []).find(x => x.id === f.id);
-			return it ? { item: it, sezione: f.sezione } : null;
-		}).filter(Boolean);
-		renderList(items.map(x => x.item), items.map(x => x.sezione));
+
+	function setScope(scope) {
+		vibrate();
+		searchScope = scope;
+		document.getElementById('scope-sezione').classList.toggle('active', scope === 'sezione');
+		document.getElementById('scope-tutto').classList.toggle('active', scope === 'tutto');
+		document.getElementById('filter-chips').style.display = scope === 'tutto' ? 'none' : 'flex';
+		updateAdvancedFiltersVisibility();
+		applyFilters();
 	}
 
-	function setScope(scope) { vibrate(); searchScope = scope; setScopeUI(); applyFilters(); }
-	function setScopeUI() {
-		document.getElementById('scope-sezione').classList.toggle('active', searchScope === 'sezione');
-		document.getElementById('scope-tutto').classList.toggle('active', searchScope === 'tutto');
-		document.getElementById('filter-chips').style.display = searchScope === 'tutto' ? 'none' : 'flex';
-	}
-
-	// --- FILTRI ---
 	function renderFilterChips() {
 		const container = document.getElementById('filter-chips');
-		if (!container || currentView !== 'sezione') { if (container) container.innerHTML=''; return; }
+		if (!container || currentView !== 'sezione') return;
 		container.innerHTML = '';
+		
 		const cfg = sezioneCfg(currentSectionId);
-		const rawData = dataStore[currentSectionId];
-		const items = Array.isArray(rawData) ? rawData : (rawData && Array.isArray(rawData[currentSectionId]) ? rawData[currentSectionId] : []);	
-			const activeFilter = activeFilterBySection[currentSectionId] || null;
-		const onlyFav = activeFilterBySection[currentSectionId + '_fav'] || false;
+		const items = dataStore[currentSectionId] || [];
+		const activeFilter = activeFilterBySection[currentSectionId] || null;
 
 		const allChip = document.createElement('button');
-		allChip.className = 'filter-chip' + (!activeFilter && !onlyFav ? ' active' : '');
+		allChip.className = 'filter-chip' + (!activeFilter ? ' active' : '');
 		allChip.textContent = 'Tutti';
-		allChip.onclick = () => { vibrate(); activeFilterBySection[currentSectionId] = null; activeFilterBySection[currentSectionId+'_fav'] = false; renderFilterChips(); applyFilters(); };
+		allChip.onclick = () => { vibrate(); activeFilterBySection[currentSectionId] = null; renderFilterChips(); applyFilters(); };
 		container.appendChild(allChip);
-
-		const favChip = document.createElement('button');
-		favChip.className = 'filter-chip' + (onlyFav ? ' active' : '');
-		favChip.textContent = '★ Preferiti';
-		favChip.onclick = () => { vibrate(); activeFilterBySection[currentSectionId+'_fav'] = !onlyFav; renderFilterChips(); applyFilters(); };
-		container.appendChild(favChip);
 
 		let values = new Set();
 		items.forEach(it => {
@@ -501,6 +772,7 @@
 			if (cfg.filtroTipo === 'array') (v || []).forEach(x => values.add(x));
 			else if (v) values.add(v);
 		});
+
 		Array.from(values).sort().forEach(val => {
 			const chip = document.createElement('button');
 			chip.className = 'filter-chip' + (activeFilter === val ? ' active' : '');
@@ -510,441 +782,39 @@
 		});
 	}
 
-	function applyFilters() {
-		if (currentView === 'preferiti-globali') { renderPreferitiGlobali(); return; }
-		const query = normalizeText(document.getElementById('search-bar').value.trim());
-
-		if (searchScope === 'tutto') {
-			let results = []; let resultSections = [];
-			SEZIONI.forEach(s => {
-				(dataStore[s.id] || []).forEach(it => {
-					const hay = s.searchFields.map(f => normalizeText(it[f] || '')).join(' ');
-					if (!query || hay.includes(query)) { results.push(it); resultSections.push(s.id); }
-				});
-			});
-			renderList(results, resultSections);
-			return;
-		}
-
-		const cfg = sezioneCfg(currentSectionId);
-		let items = dataStore[currentSectionId] || [];
-		const activeFilter = activeFilterBySection[currentSectionId] || null;
-		const onlyFav = activeFilterBySection[currentSectionId + '_fav'] || false;
-		if (onlyFav) { const favIds = new Set(getFavorites().filter(f => f.sezione === currentSectionId).map(f => f.id)); items = items.filter(it => favIds.has(it.id)); }
-		if (activeFilter) {
-			items = items.filter(it => cfg.filtroTipo === 'array' ? (it[cfg.filtroField] || []).includes(activeFilter) : it[cfg.filtroField] === activeFilter);
-		}
-		if (query) items = items.filter(it => cfg.searchFields.map(f => normalizeText(it[f] || '')).join(' ').includes(query));
-		renderList(items, items.map(() => currentSectionId));
-	}
-
-	// --- LISTA ---
-	function renderList(items, sections) {
-		const container = document.getElementById('items-list');
-		container.innerHTML = '';
-		if (items.length === 0) { container.innerHTML = '<div class="no-results">Nessun risultato trovato.</div>'; return; }
-		currentList = items;
-		const showBadge = searchScope === 'tutto' || currentView === 'preferiti-globali';
-		items.forEach((item, idx) => {
-			const sezione = sections[idx];
-			const cfg = sezioneCfg(sezione);
-			const card = document.createElement('div');
-			card.className = 'item-card';
-			card.addEventListener('click', () => { vibrate(); showDetail(sezione, idx, items, sections); });
-
-			const info = document.createElement('div');
-			info.className = 'item-card-info';
-			if (showBadge) { const b = document.createElement('div'); b.className = 'item-badge'; b.textContent = cfg.badge + ' ' + cfg.label.replace(/^\S+\s/, ''); info.appendChild(b); }
-			const metaEl = document.createElement('div'); metaEl.className = 'item-card-meta'; metaEl.textContent = cfg.sottotitolo(item);
-			const titleEl = document.createElement('div'); titleEl.className = 'item-card-title'; titleEl.textContent = itemTitolo(sezione, item);
-			const snippetEl = document.createElement('div'); snippetEl.className = 'item-card-snippet';
-			snippetEl.textContent = (item.testo || item.testoIntro || '').replace(/\s+/g, ' ').slice(0, 140) + '...';
-			info.appendChild(metaEl); info.appendChild(titleEl); info.appendChild(snippetEl);
-
-			const actions = document.createElement('div'); actions.className = 'item-card-actions';
-			const favBtn = document.createElement('button');
-			favBtn.className = 'icon-btn' + (isFavorite(sezione, item.id) ? ' is-favorite' : '');
-			favBtn.textContent = isFavorite(sezione, item.id) ? '★' : '☆';
-			favBtn.addEventListener('click', (e) => {
-				e.stopPropagation(); vibrate(); toggleFavorite(sezione, item.id);
-				favBtn.textContent = isFavorite(sezione, item.id) ? '★' : '☆';
-				favBtn.classList.toggle('is-favorite', isFavorite(sezione, item.id));
-				if (currentView === 'preferiti-globali') renderPreferitiGlobali();
-			});
-			actions.appendChild(favBtn);
-			card.appendChild(info); card.appendChild(actions);
-			container.appendChild(card);
-		});
-	}
-
-	// --- PREFERITI (unificati, con sezione) ---
-	function getFavorites() { try { return JSON.parse(localStorage.getItem('preferitiGlobali') || '[]'); } catch (e) { return []; } }
-	function saveFavorites(list) { localStorage.setItem('preferitiGlobali', JSON.stringify(list)); }
-	function isFavorite(sezione, id) { return getFavorites().some(f => f.sezione === sezione && f.id === id); }
-	function toggleFavorite(sezione, id) {
-		let favs = getFavorites();
-		if (favs.some(f => f.sezione === sezione && f.id === id)) favs = favs.filter(f => !(f.sezione === sezione && f.id === id));
-		else favs.push({ sezione, id });
-		saveFavorites(favs);
-	}
-
-	// --- DETTAGLIO ---
-	function showDetail(sezione, index, list, sections) {
-		currentSectionId = sezione;
-		currentList = list || dataStore[sezione];
-		currentDetailRef = { sezione, index, sections };
-		const item = currentList[index];
-		if (!item) return;
-		setLastItem(sezione, item.id);
-		localStorage.setItem('wasInDetailView', 'true');
-		document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-		document.getElementById('detail-view').classList.add('active');
-		const cfg = sezioneCfg(sezione);
-		document.getElementById('detail-badge').textContent = cfg.badge + ' ' + cfg.label.replace(/^\S+\s/, '');
-		document.getElementById('detail-title').textContent = itemTitolo(sezione, item);
-		document.getElementById('detail-subinfo').textContent = cfg.sottotitolo(item);
-		updateDetailActionButtons(sezione, item);
-		renderAttachments(sezione, item);
-		renderDetailBody(sezione, item);
-		applyFontSize();
-
-		const btnPrev = document.getElementById('btn-prev'), btnNext = document.getElementById('btn-next');
-		btnPrev.disabled = index === 0; btnPrev.style.opacity = index === 0 ? '0.3' : '1';
-		btnNext.disabled = index === currentList.length - 1; btnNext.style.opacity = index === currentList.length - 1 ? '0.3' : '1';
-		window.scrollTo(0, 0);
-		requestWakeLock();
-	}
-	function renderDetailBody(sezione, item) {
-		const body = document.getElementById('detail-body');
-		if (sezione === 'preghiere' && item.tipo === 'rosario') { body.innerHTML = ''; renderRosarioUI(body, item); return; }
-		if (sezione === 'preghiere' && item.tipo === 'novena') { body.innerHTML = ''; renderNovenaUI(body, item); return; }
-		body.innerHTML = '<div class="item-text"></div>';
-		body.querySelector('.item-text').innerHTML = item.testo || item.testoIntro || '';
-	}
 	function prevItem() { vibrate(); if (currentDetailRef && currentDetailRef.index > 0) showDetail(currentDetailRef.sezione, currentDetailRef.index - 1, currentList); }
 	function nextItem() { vibrate(); if (currentDetailRef && currentDetailRef.index < currentList.length - 1) showDetail(currentDetailRef.sezione, currentDetailRef.index + 1, currentList); }
 
-	function toggleFavoriteCurrent() {
-		vibrate();
-		if (!currentDetailRef) return;
-		const item = currentList[currentDetailRef.index];
-		toggleFavorite(currentDetailRef.sezione, item.id);
-		updateDetailActionButtons(currentDetailRef.sezione, item);
-	}
-	function updateDetailActionButtons(sezione, item) {
-		const favBtn = document.getElementById('btn-favorite-detail');
-		favBtn.textContent = isFavorite(sezione, item.id) ? '★' : '☆';
-		favBtn.classList.toggle('is-favorite', isFavorite(sezione, item.id));
-	}
-	async function shareCurrent() {
-		vibrate();
-		if (!currentDetailRef) return;
-		const sezione = currentDetailRef.sezione, item = currentList[currentDetailRef.index];
-		const cfg = sezioneCfg(sezione);
-		const shareText = itemTitolo(sezione, item) + ' — ' + cfg.sottotitolo(item) + '\n\n' + (item.testo || item.testoIntro || '');
-		if (navigator.share) { try { await navigator.share({ text: shareText }); } catch (e) {} }
-		else if (navigator.clipboard) { try { await navigator.clipboard.writeText(shareText); alert('Testo copiato negli appunti.'); } catch (e) {} }
-	}
-
-	// --- ALLEGATI (YouTube / PDF / Galleria immagini) ---
-	function renderAttachments(sezione, item) {
-		const ytBtn = document.getElementById('btn-youtube'), pdfBtn = document.getElementById('btn-pdf'), galBtn = document.getElementById('btn-gallery');
-		ytBtn.classList.remove('active'); pdfBtn.classList.remove('active'); galBtn.classList.remove('active');
-		// Canti: campo dedicato "youtube" con ricerca automatica di fallback
-		if (sezione === 'canti') { ytBtn.classList.add('active'); }
-		// Altre sezioni: solo se presente esplicitamente in "allegati"
-		(item.allegati || []).forEach(a => {
-			if (a.tipo === 'youtube') ytBtn.classList.add('active');
-			if (a.tipo === 'pdf') { pdfBtn.classList.add('active'); document.getElementById('pdf-label').textContent = a.nome || 'PDF'; }
+	function renderDropdown() {
+		const menu = document.getElementById('dropdown-menu');
+		menu.innerHTML = '';
+		SEZIONI.forEach(s => {
+			const el = document.createElement('div');
+			el.className = 'dropdown-item' + (currentSectionId === s.id ? ' active' : '');
+			el.innerHTML = `<span>${s.label}</span><span class="count">${(dataStore[s.id] || []).length}</span>`;
+			el.onclick = () => { vibrate(); switchSection(s.id); closeDropdown(); };
+			menu.appendChild(el);
 		});
-		if ((item.immagini || []).length > 0) { galBtn.classList.add('active'); document.getElementById('gallery-count').textContent = 'Foto (' + item.immagini.length + ')'; }
-	}
-	function getYoutubeUrlForItem(sezione, item) {
-		if (sezione === 'canti') { if (item.youtube && item.youtube.trim()) return item.youtube.trim(); return 'https://www.youtube.com/results?search_query=' + encodeURIComponent(item.titolo || item.id || ''); }
-		const a = (item.allegati || []).find(x => x.tipo === 'youtube');
-		return a ? a.url : null;
-	}
-	function openYoutubeCurrent() {
-		vibrate();
-		if (!currentDetailRef) return;
-		const sezione = currentDetailRef.sezione, item = currentList[currentDetailRef.index];
-		const url = getYoutubeUrlForItem(sezione, item);
-		if (url) window.open(url, '_blank', 'noopener');
-	}
-	function openPdfCurrent() {
-		vibrate();
-		if (!currentDetailRef) return;
-		const item = currentList[currentDetailRef.index];
-		const a = (item.allegati || []).find(x => x.tipo === 'pdf');
-		if (a) window.open(a.file, '_blank', 'noopener');
-	}
-	function openGallery() {
-		vibrate();
-		if (!currentDetailRef) return;
-		const item = currentList[currentDetailRef.index];
-		galleryImages = item.immagini || [];
-		if (galleryImages.length === 0) return;
-		galleryIndex = 0;
-		updateGalleryImg();
-		document.getElementById('gallery-overlay').classList.add('active');
-	}
-	function closeGallery() { vibrate(); document.getElementById('gallery-overlay').classList.remove('active'); }
-	function galleryPrev() { vibrate(); galleryIndex = (galleryIndex - 1 + galleryImages.length) % galleryImages.length; updateGalleryImg(); }
-	function galleryNext() { vibrate(); galleryIndex = (galleryIndex + 1) % galleryImages.length; updateGalleryImg(); }
-	function updateGalleryImg() {
-		document.getElementById('gallery-img').src = galleryImages[galleryIndex];
-		document.getElementById('gallery-counter').textContent = (galleryIndex + 1) + ' / ' + galleryImages.length;
 	}
 
-	// --- ROSARIO ---
-	let rosario = { decade: 1, bead: 0 };
-	function misteriDelGiorno() {
-		const day = new Date().getDay();
-		const set = {
-			gaudiosi: { nome: 'Misteri Gaudiosi', lista: ['Annunciazione', 'Visitazione', 'Natività', 'Presentazione al Tempio', 'Ritrovamento di Gesù al Tempio'] },
-			dolorosi: { nome: 'Misteri Dolorosi', lista: ['Agonia nell\'orto', 'Flagellazione', 'Incoronazione di spine', 'Salita al Calvario', 'Crocifissione e morte'] },
-			gloriosi: { nome: 'Misteri Gloriosi', lista: ['Risurrezione', 'Ascensione', 'Discesa dello Spirito Santo', 'Assunzione di Maria', 'Incoronazione di Maria'] },
-			luminosi: { nome: 'Misteri Luminosi', lista: ['Battesimo di Gesù', 'Nozze di Cana', 'Annuncio del Regno', 'Trasfigurazione', 'Istituzione dell\'Eucaristia'] }
-		};
-		if (day === 1 || day === 6) return set.gaudiosi;
-		if (day === 2 || day === 5) return set.dolorosi;
-		if (day === 4) return set.luminosi;
-		return set.gloriosi;
-	}
-	function renderRosarioUI(container, item) {
-		rosario = { decade: 1, bead: 0 };
-		const misteri = misteriDelGiorno();
-		const box = document.createElement('div'); box.className = 'rosario-box';
-		container.appendChild(box);
-		function draw() {
-			box.innerHTML = '';
-			if (rosario.decade > 5) {
-				box.innerHTML = '<div class="rosario-complete">✅ Rosario completato! 🙏</div>';
-				const resetBtn = document.createElement('button'); resetBtn.className = 'rosario-reset'; resetBtn.textContent = '↺ Ricomincia'; resetBtn.onclick = () => { vibrate(); rosario = { decade: 1, bead: 0 }; draw(); };
-				box.appendChild(resetBtn);
-				return;
-			}
-			const title = document.createElement('div'); title.className = 'rosario-misteri-title'; title.textContent = misteri.nome + ' (di oggi)';
-			const list = document.createElement('ul'); list.className = 'rosario-misteri-list';
-			misteri.lista.forEach((m, i) => { const li = document.createElement('li'); li.textContent = (i+1) + '. ' + m; if (i+1 === rosario.decade) li.className = 'corrente'; list.appendChild(li); });
-			const progress = document.createElement('div'); progress.className = 'rosario-progress'; progress.textContent = 'Decina ' + rosario.decade + ' di 5 — Ave Maria ' + rosario.bead + '/10';
-			const dots = document.createElement('div'); dots.className = 'rosario-dots';
-			for (let i=1;i<=10;i++){ const d=document.createElement('div'); d.className='rosario-dot'+(i<=rosario.bead?' filled':''); dots.appendChild(d); }
-			const tapBtn = document.createElement('button'); tapBtn.className = 'rosario-tap-btn'; tapBtn.textContent = '🙏 Ave Maria';
-			tapBtn.onclick = () => {
-				vibrate(15);
-				rosario.bead++;
-				if (rosario.bead >= 10) { rosario.decade++; rosario.bead = 0; }
-				draw();
-			};
-			const resetBtn = document.createElement('button'); resetBtn.className = 'rosario-reset'; resetBtn.textContent = '↺ Ricomincia'; resetBtn.onclick = () => { vibrate(); rosario = { decade: 1, bead: 0 }; draw(); };
-			box.appendChild(title); box.appendChild(list); box.appendChild(progress); box.appendChild(dots); box.appendChild(tapBtn); box.appendChild(resetBtn);
-		}
-		draw();
-	}
+	function toggleDropdown() { vibrate(); renderDropdown(); document.getElementById('dropdown-overlay').classList.toggle('active'); }
+	function closeDropdown() { document.getElementById('dropdown-overlay').classList.remove('active'); }
+	function renderSectionPickerLabel() { document.getElementById('section-picker-label').textContent = sezioneCfg(currentSectionId)?.label || ''; }
 
-	// --- NOVENA ---
-	function getNovenaState(id) { try { return JSON.parse(localStorage.getItem('novena_' + id)); } catch (e) { return null; } }
-	function saveNovenaState(id, state) { localStorage.setItem('novena_' + id, JSON.stringify(state)); }
-	function todayISO() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
-	function currentNovenaDay(state, totalDays) {
-		const start = new Date(state.startDate + 'T00:00:00');
-		const today = new Date(todayISO() + 'T00:00:00');
-		const diff = Math.floor((today - start) / 86400000) + 1;
-		return Math.min(Math.max(diff, 1), totalDays);
-	}
-	function renderNovenaUI(container, item) {
-		const box = document.createElement('div'); box.className = 'novena-box';
-		container.appendChild(box);
-		function draw() {
-			box.innerHTML = '';
-			const state = getNovenaState(item.id);
-			if (!state) {
-				const intro = document.createElement('div'); intro.className = 'item-text'; intro.textContent = item.testoIntro || '';
-				const startBtn = document.createElement('button'); startBtn.className = 'novena-btn'; startBtn.textContent = '▶ Inizia la Novena (' + item.giorni + ' giorni)';
-				startBtn.onclick = () => { vibrate(); saveNovenaState(item.id, { startDate: todayISO(), completedDays: [] }); draw(); };
-				box.appendChild(intro); box.appendChild(startBtn);
-				return;
-			}
-			const day = currentNovenaDay(state, item.giorni);
-			const dotsRow = document.createElement('div'); dotsRow.className = 'novena-dots';
-			for (let i=1;i<=item.giorni;i++){
-				const dot = document.createElement('div');
-				dot.className = 'novena-dot' + (state.completedDays.includes(i) ? ' done' : '') + (i === day ? ' current' : '');
-				dot.textContent = i;
-				dotsRow.appendChild(dot);
-			}
-			const dayTitle = document.createElement('div'); dayTitle.className = 'novena-day-title';
-			dayTitle.textContent = day > item.giorni ? '🎉 Novena completata!' : 'Giorno ' + day + ' di ' + item.giorni;
-			const dayText = document.createElement('div'); dayText.className = 'novena-day-text';
-			dayText.textContent = (item.testiGiorni && item.testiGiorni[day-1]) ? item.testiGiorni[day-1] : (item.testoIntro || '');
-			box.appendChild(dotsRow); box.appendChild(dayTitle); box.appendChild(dayText);
-			if (day <= item.giorni) {
-				const doneBtn = document.createElement('button'); doneBtn.className = 'novena-btn';
-				doneBtn.textContent = state.completedDays.includes(day) ? '✓ Segnato come pregato' : '✓ Segna come pregato oggi';
-				doneBtn.onclick = () => { vibrate(); if (!state.completedDays.includes(day)) { state.completedDays.push(day); saveNovenaState(item.id, state); draw(); } };
-				box.appendChild(doneBtn);
-			}
-			const resetBtn = document.createElement('button'); resetBtn.className = 'novena-btn secondary'; resetBtn.textContent = '↺ Ricomincia da capo';
-			resetBtn.onclick = () => { vibrate(); localStorage.removeItem('novena_' + item.id); draw(); };
-			box.appendChild(resetBtn);
-		}
-		draw();
-	}
-
-	// --- NAVIGAZIONE GENERALE ---
-	function showListView(skipReset) {
-		vibrate();
-		localStorage.setItem('wasInDetailView', 'false');
-		releaseWakeLock();
-		document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-		document.getElementById('list-view').classList.add('active');
-		if (!skipReset) {
-			const searchBar = document.getElementById('search-bar');
-			if (searchBar) searchBar.value = '';
-			renderFilterChips();
-			applyFilters();
-		}
-	}
-	function setLastItem(sezione, id) { localStorage.setItem('lastItem', JSON.stringify({ sezione, id })); }
-	function getLastItem() { try { return JSON.parse(localStorage.getItem('lastItem')); } catch (e) { return null; } }
-	function openLast() {
-		vibrate();
-		const last = getLastItem();
-		if (!last) return;
-		const idx = (dataStore[last.sezione] || []).findIndex(it => it.id === last.id);
-		if (idx !== -1) { closeSettings(); showDetail(last.sezione, idx, dataStore[last.sezione]); }
-	}
-	function updateLastSetting() {
-		const row = document.getElementById('last-item-row'), titleEl = document.getElementById('last-title');
-		const last = getLastItem();
-		if (!last) { row.classList.remove('active'); return; }
-		const idx = (dataStore[last.sezione] || []).findIndex(it => it.id === last.id);
-		if (idx === -1) { row.classList.remove('active'); return; }
-		const cfg = sezioneCfg(last.sezione), item = dataStore[last.sezione][idx];
-		titleEl.textContent = cfg.badge + ' ' + itemTitolo(last.sezione, item);
-		row.classList.add('active');
-	}
-	function updateCounts() {
-		document.getElementById('counts-list').innerHTML = SEZIONI.map(s => s.badge + ' ' + (dataStore[s.id]||[]).length).join('<br>');
-	}
-
-	// --- IMPOSTAZIONI ---
-	function openSettings() { vibrate(); document.getElementById('settings-modal').classList.add('active'); updateFontSizeDisplay(); syncWakeLockToggle(); syncVibrationToggle(); syncFontFamilyToggle(); updateLastSetting(); updateCounts(); }
+	function openSettings() { vibrate(); document.getElementById('settings-modal').classList.add('active'); }
 	function closeSettings() { vibrate(); document.getElementById('settings-modal').classList.remove('active'); }
-	function closeSettingsOnOverlay(event) { if (event.target.id === 'settings-modal') closeSettings(); }
+	function closeSettingsOnOverlay(e) { if (e.target.id === 'settings-modal') closeSettings(); }
 
-	function applyFontSize() { document.documentElement.style.setProperty('--content-font-scale', currentFontSize / BASE_FONT_SIZE); }
-	function changeFontSize(direction) { vibrate(); currentFontSize += direction*0.1; if (currentFontSize<0.75) currentFontSize=0.75; if (currentFontSize>2.2) currentFontSize=2.2; applyFontSize(); setSetting('fontSize', currentFontSize); updateFontSizeDisplay(); }
-	function updateFontSizeDisplay() { const d=document.getElementById('font-size-value'); if(d) d.textContent = Math.round((currentFontSize/BASE_FONT_SIZE)*100)+'%'; }
-
-	let pinchActive=false, pinchStartDistance=null, pinchStartFontSize=null;
-	function getTouchDistance(t){ const dx=t[0].clientX-t[1].clientX, dy=t[0].clientY-t[1].clientY; return Math.sqrt(dx*dx+dy*dy); }
-	function setupPinchToZoom(el){
-		if(!el) return;
-		el.addEventListener('touchstart', e=>{ if(e.touches.length===2){ pinchActive=true; pinchStartDistance=getTouchDistance(e.touches); pinchStartFontSize=currentFontSize; } }, {passive:true});
-		el.addEventListener('touchmove', e=>{ if(e.touches.length===2 && pinchStartDistance){ e.preventDefault(); const ratio=getTouchDistance(e.touches)/pinchStartDistance; let n=pinchStartFontSize*ratio; if(n<0.75)n=0.75; if(n>2.2)n=2.2; currentFontSize=n; applyFontSize(); updateFontSizeDisplay(); } }, {passive:false});
-		el.addEventListener('touchend', e=>{ if(e.touches.length<2){ if(pinchStartDistance!==null){ setSetting('fontSize', currentFontSize); vibrate(15); } pinchStartDistance=null; pinchStartFontSize=null; setTimeout(()=>{pinchActive=false;},80); } }, {passive:true});
+	function changeFontSize(dir) { vibrate(); currentFontSize += dir * 0.1; applyFontSize(); }
+	function applyFontSize() { 
+		document.documentElement.style.setProperty('--content-font-scale', currentFontSize / BASE_FONT_SIZE); 
+		document.getElementById('font-size-value').textContent = Math.round((currentFontSize/BASE_FONT_SIZE)*100) + '%';
 	}
-
-	function isVibrationSupported(){ return 'vibrate' in navigator; }
-	function vibrate(ms){ if(!isVibrationSupported())return; if(!getSetting('vibrationEnabled'))return; try{navigator.vibrate(ms||25);}catch(e){} }
-	function onVibrationToggleChange(){ const t=document.getElementById('vibration-toggle'); if(!t)return; setSetting('vibrationEnabled', t.checked); if(t.checked) vibrate(25); }
-	function syncVibrationToggle(){ const t=document.getElementById('vibration-toggle'), n=document.getElementById('vibration-note'); if(!t)return; if(!isVibrationSupported()){t.checked=false;t.disabled=true;if(n)n.style.display='block';return;} t.checked=getSetting('vibrationEnabled'); }
-
-	function applyFontFamily(){ document.documentElement.setAttribute('data-font', getSetting('fontFamily')); }
-	function onFontFamilyToggleChange(){ const t=document.getElementById('fontfamily-toggle'); if(!t)return; vibrate(); setSetting('fontFamily', t.checked?'serif':'sans'); applyFontFamily(); }
-	function syncFontFamilyToggle(){ const t=document.getElementById('fontfamily-toggle'); if(t) t.checked=getSetting('fontFamily')==='serif'; }
-
-	function isWakeLockSupported(){ return 'wakeLock' in navigator; }
-	async function requestWakeLock(){ if(!isWakeLockSupported())return; if(!getSetting('wakeLockEnabled'))return; if(!document.getElementById('detail-view').classList.contains('active'))return; try{ wakeLockSentinel=await navigator.wakeLock.request('screen'); wakeLockSentinel.addEventListener('release',()=>{wakeLockSentinel=null;}); }catch(e){console.log('Wake lock error:',e);} }
-	async function releaseWakeLock(){ if(wakeLockSentinel){ try{await wakeLockSentinel.release();}catch(e){} wakeLockSentinel=null; } }
-	function onWakeLockToggleChange(){ const t=document.getElementById('wakelock-toggle'); if(!t)return; vibrate(); setSetting('wakeLockEnabled', t.checked); if(t.checked) requestWakeLock(); else releaseWakeLock(); }
-	function syncWakeLockToggle(){ const t=document.getElementById('wakelock-toggle'), n=document.getElementById('wakelock-note'); if(!t)return; if(!isWakeLockSupported()){t.checked=false;t.disabled=true;if(n)n.style.display='block';return;} t.checked=getSetting('wakeLockEnabled'); }
-
-	function toggleTheme(){ vibrate(); const cur=document.documentElement.getAttribute('data-theme'); const tgt=cur==='dark'?'light':'dark'; document.documentElement.setAttribute('data-theme', tgt); setSetting('theme', tgt); }
-
-	function showUpdateToast(){ document.getElementById('update-toast').classList.add('active'); }
-	function applyUpdate(){ vibrate(); document.getElementById('update-toast').classList.remove('active'); if(swRegistration && swRegistration.waiting) swRegistration.waiting.postMessage({type:'SKIP_WAITING'}); else window.location.reload(); }
-	async function installApp(){ vibrate(); if(!deferredInstallPrompt)return; deferredInstallPrompt.prompt(); await deferredInstallPrompt.userChoice; deferredInstallPrompt=null; document.getElementById('install-item').classList.remove('active'); }
-
-	// --- SWIPE (solo se non in corso un pinch) ---
-	let touchStartX=0, touchStartY=0, touchEndX=0, touchEndY=0;
-	function handleSwipeGesture(){ if(pinchActive)return; const dx=touchEndX-touchStartX, dy=touchEndY-touchStartY; if(Math.abs(dy)>Math.abs(dx))return; if(dx<-70) nextItem(); else if(dx>70) prevItem(); }
+	function toggleTheme() { vibrate(); const cur = document.documentElement.getAttribute('data-theme'); document.documentElement.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark'); }
+	function vibrate() { if ('vibrate' in navigator) try { navigator.vibrate(15); } catch(e){} }
 
 	document.addEventListener('DOMContentLoaded', () => {
-		document.documentElement.setAttribute('data-theme', getSetting('theme'));
-		applyFontFamily();
 		loadAll();
-
-		document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') requestWakeLock(); });
-
-		const detailView = document.getElementById('detail-view');
-		detailView.addEventListener('touchstart', e=>{ if(e.changedTouches.length===0)return; touchStartX=e.changedTouches[0].screenX; touchStartY=e.changedTouches[0].screenY; }, {passive:true});
-		detailView.addEventListener('touchend', e=>{ if(e.changedTouches.length===0)return; touchEndX=e.changedTouches[0].screenX; touchEndY=e.changedTouches[0].screenY; handleSwipeGesture(); }, {passive:true});
-		setupPinchToZoom(document.getElementById('detail-body'));
-		setupPinchToZoom(document.getElementById('items-list'));
-
-		if (window.location.protocol !== 'file:') {
-			const manifestLink = document.createElement('link'); manifestLink.rel='manifest'; manifestLink.href='manifest.json'; document.head.appendChild(manifestLink);
-			let newWorker;
-			window.agganciaAggiornamento = function () {
-				if (newWorker) {
-				newWorker.postMessage({
-				type: 'SKIP_WAITING'
-				});
-				}
-				};
-			if ('serviceWorker' in navigator) {
-				// Registriamo il service worker
-				navigator.serviceWorker.register('/sw.js').then(reg => {
-					// Controlliamo se c'è già un aggiornamento in attesa
-					if (reg.waiting) {
-						newWorker = reg.waiting;
-						mostraBannerAggiornamento();
-					}
-			
-					// Ascoltiamo l'arrivo di nuove versioni in background
-					reg.addEventListener('updatefound', () => {
-						newWorker = reg.installing;
-						newWorker.addEventListener('statechange', () => {
-							// Se la nuova versione ha finito di installarsi ed è pronta
-							if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-								mostraBannerAggiornamento();
-							}
-						});
-					});
-				});
-			
-				// Quando l'utente clicca "Aggiorna ora", la pagina si ricarica da sola con i nuovi dati
-				let refreshing = false;
-				navigator.serviceWorker.addEventListener('controllerchange', () => {
-					if (!refreshing) {
-						window.location.reload();
-						refreshing = true;
-					}
-				});
-			}
-			
-			// Funzione interna per far comparire il banner
-			function mostraBannerAggiornamento() {
-				const banner = document.getElementById('update-banner');
-				if (banner) {
-					banner.style.display = 'block';
-				}
-			}
-			
-			// Funzione collegata al pulsante "Aggiorna ora"
-			function agganciaAggiornamento() {
-			
-				if (newWorker) {
-					// Diciamo al Service Worker di saltare l'attesa e attivarsi subito
-					newWorker.postMessage({ type: 'SKIP_WAITING' });
-				}
-			}
-		}
-		window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredInstallPrompt=e; document.getElementById('install-item').classList.add('active'); });
-		window.addEventListener('appinstalled', () => { deferredInstallPrompt=null; document.getElementById('install-item').classList.remove('active'); });
 	});
 </script>
 </body>
