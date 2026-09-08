@@ -1013,29 +1013,42 @@ function renderFilterChips() {
 	if (!container || currentView !== 'sezione') return;
 	container.innerHTML = '';
 	
-	const cfg = sezioneCfg(currentSectionId);
-	const items = dataStore[currentSectionId] || [];
+	const cfg = (typeof sezioneCfg === 'function') ? sezioneCfg(currentSectionId) : null;
+	if (!cfg) return;
+
+	const items = Array.isArray(dataStore[currentSectionId]) ? dataStore[currentSectionId] : [];
 	const activeFilter = activeFilterBySection[currentSectionId] || null;
 
 	const allChip = document.createElement('button');
 	allChip.className = 'filter-chip' + (!activeFilter ? ' active' : '');
 	allChip.textContent = 'Tutti';
-	allChip.onclick = () => { vibrate(); activeFilterBySection[currentSectionId] = null; renderFilterChips(); applyFilters(); };
+	allChip.onclick = () => { 
+		if (typeof vibrate === 'function') vibrate(); 
+		activeFilterBySection[currentSectionId] = null; 
+		renderFilterChips(); 
+		applyFilters(); 
+	};
 	container.appendChild(allChip);
 
 	let values = new Set();
+
 	items.forEach(it => {
-		const v = it[cfg.filtroField];
+		if (!it) return;
+		const rawVal = it[cfg.filtroField];
+		if (rawVal === undefined || rawVal === null) return;
+
 		if (cfg.filtroTipo === 'array') {
-			let catArray = [];
-			if (Array.isArray(v)) {
-				catArray = v;
-			} else if (typeof v === 'string' && v.trim() !== '') {
-				catArray = v.split(',').map(s => s.trim());
+			if (Array.isArray(rawVal)) {
+				rawVal.forEach(x => { if (x) values.add(String(x).trim()); });
+			} else if (typeof rawVal === 'string' && rawVal.trim() !== '') {
+				rawVal.split(',').forEach(x => { 
+					const trimmed = x.trim();
+					if (trimmed) values.add(trimmed); 
+				});
 			}
-			catArray.forEach(x => { if (x) values.add(x); });
-		} else if (v) {
-			values.add(v);
+		} else {
+			const strVal = String(rawVal).trim();
+			if (strVal) values.add(strVal);
 		}
 	});
 
@@ -1043,7 +1056,12 @@ function renderFilterChips() {
 		const chip = document.createElement('button');
 		chip.className = 'filter-chip' + (activeFilter === val ? ' active' : '');
 		chip.textContent = val;
-		chip.onclick = () => { vibrate(); activeFilterBySection[currentSectionId] = (activeFilter === val) ? null : val; renderFilterChips(); applyFilters(); };
+		chip.onclick = () => { 
+			if (typeof vibrate === 'function') vibrate(); 
+			activeFilterBySection[currentSectionId] = (activeFilter === val) ? null : val; 
+			renderFilterChips(); 
+			applyFilters(); 
+		};
 		container.appendChild(chip);
 	});
 }
