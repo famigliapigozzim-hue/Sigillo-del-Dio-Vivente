@@ -102,15 +102,19 @@
 		}
 	}
 	/* Stile specifico per il pulsante YouTube nel Dettaglio */
+	/* Allinea l'icona al testo e colora solo la freccia di rosso */
 	#btn-youtube-detail {
-  		background-color: #ff0000 !important; /* Rosso YouTube */
-  		color: white !important;             /* Testo bianco */
-  		border-color: #ff0000 !important;    /* Bordo rosso (se visibile) */
+  	display: inline-flex;
+  	align-items: center;
+  	gap: 0.3rem;
 	}
-	/* Effetto hover (quando ci passi sopra col mouse) */
-		#btn-youtube-detail:hover {
-  		background-color: #cc0000 !important; /* Un rosso più scuro al passaggio */
+
+	.yt-arrow-icon {
+  	width: 18px;
+  	height: 18px;
+  	fill: #ff0000; /* Imposta il colore rosso solo per la freccia */
 	}
+	
 	/* =========================================================
 	4. STILI GENERALI & RESET
 	========================================================= */
@@ -427,7 +431,12 @@
 			<div class="detail-actions" style="margin-top:0.5rem;">
 				<button class="btn-back" id="btn-favorite-detail" onclick="toggleFavoriteCurrent()">☆ Preferito</button>
 				<button class="btn-back" id="btn-share-detail" onclick="shareCurrent()">📤 Condividi</button>
-				<button class="btn-back" id="btn-youtube-detail" onclick="openYouTubeCurrent()">▶️ YouTube</button>
+				<button class="btn-back" id="btn-youtube-detail" onclick="openYouTubeCurrent()">
+  					<svg class="yt-arrow-icon" viewBox="0 0 24 24">
+    				<path d="M8 5v14l11-7z"/>
+  					</svg>
+  					YouTube
+				</button>
 			</div>
 			<div id="detail-body"></div>
 		</div>
