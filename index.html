@@ -428,20 +428,56 @@
 				<span>Tema pagina</span>
 				<button class="btn-setting" onclick="toggleTheme()">🌓 Cambia</button>
 			</div>
+
+			<div class="setting-item">
+				<span>Schermo sempre attivo in lettura</span>
+				<input type="checkbox" id="toggle-wakelock" onchange="toggleWakeLock(this.checked)">
+			</div>
+
+			<div class="setting-item">
+				<span>Ricorda ultimo elemento letto</span>
+				<input type="checkbox" id="toggle-remember-last" onchange="toggleRememberLast(this.checked)">
+			</div>
 		</div>
 	</div>
 
 <script>
-	const SEZIONI = [
-		{ id: 'canti', badge: '📖', label: '📖 Canti', file: 'canti.json', filtroField: 'categorie', filtroTipo: 'array',
-		  titoloField: 'titolo', sottotitolo: (it) => '', searchFields: ['titolo', 'testo'] },
-		{ id: 'messaggi', badge: '☁️', label: '☁️ Messaggi', file: 'messaggi.json', filtroField: 'chiParla', filtroTipo: 'stringa',
-		  titoloField: 'chiParla', sottotitolo: (it) => (it.dataDisplay || it.data || '') + (it.destinatario ? ' — a ' + it.destinatario : '') + (it.luogo ? ' — ' + it.luogo : ''),
-		  searchFields: ['chiParla', 'destinatario', 'luogo', 'dataDisplay', 'testo'] },
-		{ id: 'preghiere', badge: '🙏', label: '🙏 Preghiere', file: 'preghiere.json', filtroField: 'categoria', filtroTipo: 'stringa',
-		  titoloField: 'titolo', sottotitolo: (it) => it.categoria || '', searchFields: ['titolo', 'categoria', 'testo'] }
-	];
+// 1. Link unico dell'API di Google Apps Script
+const API_URL = 'https://script.google.com/macros/s/AKfycbyACljxIfQNMcOUzG-LGDCABjNgfHiAw9mrE8Uwl0x1Krh0_4bTL0eKd_Z9KPZOQfk/exec';
 
+// 2. Definizione delle sezioni (senza la voce "file")
+const SEZIONI = [
+    { 
+        id: 'canti', 
+        badge: '📖', 
+        label: '📖 Canti', 
+        filtroField: 'categorie', 
+        filtroTipo: 'array',
+        titoloField: 'titolo', 
+        sottotitolo: (it) => '', 
+        searchFields: ['titolo', 'testo'] 
+    },
+    { 
+        id: 'messaggi', 
+        badge: '☁️', 
+        label: '☁️ Messaggi', 
+        filtroField: 'chiParla', 
+        filtroTipo: 'stringa',
+        titoloField: 'chiParla', 
+        sottotitolo: (it) => (it.dataDisplay || it.data || '') + (it.destinatario ? ' — a ' + it.destinatario : '') + (it.luogo ? ' — ' + it.luogo : ''),
+        searchFields: ['chiParla', 'destinatario', 'luogo', 'dataDisplay', 'testo'] 
+    },
+    { 
+        id: 'preghiere', 
+        badge: '🙏', 
+        label: '🙏 Preghiere', 
+        filtroField: 'categoria', 
+        filtroTipo: 'stringa',
+        titoloField: 'titolo', 
+        sottotitolo: (it) => it.categoria || '', 
+        searchFields: ['titolo', 'categoria', 'testo'] 
+    }
+];
 	const DEFAULT_SETTINGS = { theme: 'light', fontSize: 1.05, vibrationEnabled: true };
 	const BASE_FONT_SIZE = DEFAULT_SETTINGS.fontSize;
 
@@ -463,6 +499,61 @@
 	let currentDetailRef = null;
 	let currentFontSize = getSetting('fontSize');
 
+	// Aggiungi ai valori predefiniti
+const DEFAULT_SETTINGS = { 
+	theme: 'light', 
+	fontSize: 1.05, 
+	vibrationEnabled: true,
+	keepScreenOn: true,
+	rememberLast: true
+};
+
+let wakeLockSentinel = null;
+
+	// GESTIONE SCHERMO ATTIVO (WAKE LOCK)
+	async function enableWakeLock() {
+		if (getSetting('keepScreenOn') && 'wakeLock' in navigator) {
+			try {
+				wakeLockSentinel = await navigator.wakeLock.request('screen');
+			} catch (err) {
+				console.warn('Wake Lock non supportato o bloccato:', err);
+			}
+		}
+	}
+
+	function disableWakeLock() {
+		if (wakeLockSentinel) {
+			wakeLockSentinel.release().then(() => {
+				wakeLockSentinel = null;
+			});
+		}
+	}
+
+	function toggleWakeLock(enabled) {
+		vibrate();
+		setSetting('keepScreenOn', enabled);
+		if (!enabled) disableWakeLock();
+	}
+
+	// GESTIONE ULTIMO ELEMENTO
+	function toggleRememberLast(enabled) {
+		vibrate();
+		setSetting('rememberLast', enabled);
+	}
+
+	function saveLastViewed(sezione, index) {
+		if (!getSetting('rememberLast')) return;
+		const lastViewedMap = JSON.parse(localStorage.getItem('last_viewed_items') || '{}');
+		lastViewedMap[sezione] = index;
+		localStorage.setItem('last_viewed_items', JSON.stringify(lastViewedMap));
+	}
+
+	function getLastViewed(sezione) {
+		if (!getSetting('rememberLast')) return null;
+		const lastViewedMap = JSON.parse(localStorage.getItem('last_viewed_items') || '{}');
+		return lastViewedMap[sezione] ?? null;
+	}
+	
 	// --- NORMALIZZAZIONE E FILTRI AVANZATI ---
 	function normalizeText(str) {
 		if (!str) return '';
@@ -539,38 +630,32 @@
 				Array.from(anni).sort((a,b) => b - a).map(a => `<option value="${a}">${a}</option>`).join('');
 		}
 	}
+const API_URL = 'https://script.google.com/macros/s/AKfycbxi_6VuUQpgS4DWf8ObAmCncSIqgN8MbQ7D_cjVcQ/dev'; // Incolla qui il tuo link unico
 
-	async function loadAll() {
-		const container = document.getElementById('items-list');
-		if (container) container.innerHTML = '<div class="no-results">Caricamento...</div>';
+async function loadAll() {
+	const container = document.getElementById('items-list');
+	if (container) container.innerHTML = '<div class="no-results">Caricamento...</div>';
+	
+	try {
+		const response = await fetch(API_URL);
+		const data = await response.json();
 		
-		try {
-			const results = await Promise.allSettled(
-				SEZIONI.map(s => fetch(s.file).then(r => r.json()))
-			);
-			
-			results.forEach((result, i) => {
-				const section = SEZIONI[i];
-				if (result.status === "fulfilled") {
-					const val = result.value;
-					dataStore[section.id] = Array.isArray(val) ? val : (val[section.id] || []);
-				} else {
-					dataStore[section.id] = [];
-				}
-			});
-		} catch (err) {
-			if (container) container.innerHTML = '<div class="no-results">Errore caricamento dati.</div>';
-			return;
-		}
-
-		populateAdvancedFilters();
-		updateAdvancedFiltersVisibility();
-		renderSectionPickerLabel();
-		renderFilterChips();
-		applyFilters();
-		document.body.setAttribute('data-section', currentSectionId);
-		applyFontSize();
+		SEZIONI.forEach(s => {
+			dataStore[s.id] = data[s.id] || [];
+		});
+	} catch (err) {
+		if (container) container.innerHTML = '<div class="no-results">Errore caricamento dati.</div>';
+		return;
 	}
+
+	populateAdvancedFilters();
+	updateAdvancedFiltersVisibility();
+	renderSectionPickerLabel();
+	renderFilterChips();
+	applyFilters();
+	document.body.setAttribute('data-section', currentSectionId);
+	applyFontSize();
+}
 
 	function sezioneCfg(id) { return SEZIONI.find(s => s.id === id); }
 	function itemTitolo(sezioneId, item) { const cfg = sezioneCfg(sezioneId); return item[cfg ? cfg.titoloField : 'titolo'] || ''; }
@@ -717,6 +802,7 @@
 		const detailView = document.getElementById('detail-view');
 		detailView.style.display = 'block';
 		window.scrollTo({ top: 0, behavior: 'instant' });
+		updateFavoriteButtonState(realSection, item);
 	}
 
 	function showListView() {
@@ -726,6 +812,8 @@
 	}
 
 	function switchSection(sezione) {
+		document.getElementById('scope-row').style.display = 'flex';
+		document.getElementById('filter-chips').style.display = 'flex';
 		if (!SEZIONI.some(s => s.id === sezione)) return;
 		currentSectionId = sezione;
 		currentView = 'sezione';
@@ -785,17 +873,25 @@
 	function prevItem() { vibrate(); if (currentDetailRef && currentDetailRef.index > 0) showDetail(currentDetailRef.sezione, currentDetailRef.index - 1, currentList); }
 	function nextItem() { vibrate(); if (currentDetailRef && currentDetailRef.index < currentList.length - 1) showDetail(currentDetailRef.sezione, currentDetailRef.index + 1, currentList); }
 
-	function renderDropdown() {
-		const menu = document.getElementById('dropdown-menu');
-		menu.innerHTML = '';
-		SEZIONI.forEach(s => {
-			const el = document.createElement('div');
-			el.className = 'dropdown-item' + (currentSectionId === s.id ? ' active' : '');
-			el.innerHTML = `<span>${s.label}</span><span class="count">${(dataStore[s.id] || []).length}</span>`;
-			el.onclick = () => { vibrate(); switchSection(s.id); closeDropdown(); };
-			menu.appendChild(el);
-		});
-	}
+function renderDropdown() {
+    const menu = document.getElementById('dropdown-menu');
+    menu.innerHTML = '';
+    
+    SEZIONI.forEach(s => {
+        const el = document.createElement('div');
+        el.className = 'dropdown-item' + (currentSectionId === s.id && currentView !== 'preferiti-globali' ? ' active' : '');
+        el.innerHTML = `<span>${s.label}</span><span class="count">${(dataStore[s.id] || []).length}</span>`;
+        el.onclick = () => { vibrate(); switchSection(s.id); closeDropdown(); };
+        menu.appendChild(el);
+    });
+
+    const totalFavs = getFavorites().length;
+    const favEl = document.createElement('div');
+    favEl.className = 'dropdown-item' + (currentView === 'preferiti-globali' ? ' active' : '');
+    favEl.innerHTML = `<span>⭐ Preferiti</span><span class="count">${totalFavs}</span>`;
+    favEl.onclick = () => { showPreferitiGlobali(); closeDropdown(); };
+    menu.appendChild(favEl);
+}
 
 	function toggleDropdown() { vibrate(); renderDropdown(); document.getElementById('dropdown-overlay').classList.toggle('active'); }
 	function closeDropdown() { document.getElementById('dropdown-overlay').classList.remove('active'); }
