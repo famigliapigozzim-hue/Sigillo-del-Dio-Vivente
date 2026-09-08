@@ -442,10 +442,10 @@
 	</div>
 
 <script>
-// 1. Link unico dell'API di Google Apps Script
+// 1. Link unico dell'API di Google Apps Script (/exec)
 const API_URL = 'https://script.google.com/macros/s/AKfycbyACljxIfQNMcOUzG-LGDCABjNgfHiAw9mrE8Uwl0x1Krh0_4bTL0eKd_Z9KPZOQfk/exec';
 
-// 2. Definizione delle sezioni (senza la voce "file")
+// 2. Definizione delle sezioni
 const SEZIONI = [
     { 
         id: 'canti', 
@@ -478,28 +478,8 @@ const SEZIONI = [
         searchFields: ['titolo', 'categoria', 'testo'] 
     }
 ];
-	const DEFAULT_SETTINGS = { theme: 'light', fontSize: 1.05, vibrationEnabled: true };
-	const BASE_FONT_SIZE = DEFAULT_SETTINGS.fontSize;
 
-	function getSetting(key) {
-		const raw = localStorage.getItem(key);
-		if (raw === null) return DEFAULT_SETTINGS[key];
-		if (typeof DEFAULT_SETTINGS[key] === 'boolean') return raw === 'true';
-		if (typeof DEFAULT_SETTINGS[key] === 'number') return parseFloat(raw);
-		return raw;
-	}
-	function setSetting(key, value) { localStorage.setItem(key, value); }
-
-	let dataStore = {};
-	let currentSectionId = 'canti';
-	let currentView = 'sezione';
-	let searchScope = 'sezione';
-	let activeFilterBySection = {};
-	let currentList = [];
-	let currentDetailRef = null;
-	let currentFontSize = getSetting('fontSize');
-
-	// Aggiungi ai valori predefiniti
+// Impostazioni Predefinite
 const DEFAULT_SETTINGS = { 
 	theme: 'light', 
 	fontSize: 1.05, 
@@ -507,130 +487,239 @@ const DEFAULT_SETTINGS = {
 	keepScreenOn: true,
 	rememberLast: true
 };
+const BASE_FONT_SIZE = DEFAULT_SETTINGS.fontSize;
 
+function getSetting(key) {
+	const raw = localStorage.getItem(key);
+	if (raw === null) return DEFAULT_SETTINGS[key];
+	if (typeof DEFAULT_SETTINGS[key] === 'boolean') return raw === 'true';
+	if (typeof DEFAULT_SETTINGS[key] === 'number') return parseFloat(raw);
+	return raw;
+}
+function setSetting(key, value) { localStorage.setItem(key, value); }
+
+let dataStore = {};
+let currentSectionId = 'canti';
+let currentView = 'sezione';
+let searchScope = 'sezione';
+let activeFilterBySection = {};
+let currentList = [];
+let currentDetailRef = null;
+let currentFontSize = getSetting('fontSize');
 let wakeLockSentinel = null;
 
-	// GESTIONE SCHERMO ATTIVO (WAKE LOCK)
-	async function enableWakeLock() {
-		if (getSetting('keepScreenOn') && 'wakeLock' in navigator) {
-			try {
-				wakeLockSentinel = await navigator.wakeLock.request('screen');
-			} catch (err) {
-				console.warn('Wake Lock non supportato o bloccato:', err);
-			}
+// GESTIONE SCHERMO ATTIVO (WAKE LOCK)
+async function enableWakeLock() {
+	if (getSetting('keepScreenOn') && 'wakeLock' in navigator) {
+		try {
+			wakeLockSentinel = await navigator.wakeLock.request('screen');
+		} catch (err) {
+			console.warn('Wake Lock non supportato o bloccato:', err);
 		}
 	}
+}
 
-	function disableWakeLock() {
-		if (wakeLockSentinel) {
-			wakeLockSentinel.release().then(() => {
-				wakeLockSentinel = null;
-			});
-		}
-	}
-
-	function toggleWakeLock(enabled) {
-		vibrate();
-		setSetting('keepScreenOn', enabled);
-		if (!enabled) disableWakeLock();
-	}
-
-	// GESTIONE ULTIMO ELEMENTO
-	function toggleRememberLast(enabled) {
-		vibrate();
-		setSetting('rememberLast', enabled);
-	}
-
-	function saveLastViewed(sezione, index) {
-		if (!getSetting('rememberLast')) return;
-		const lastViewedMap = JSON.parse(localStorage.getItem('last_viewed_items') || '{}');
-		lastViewedMap[sezione] = index;
-		localStorage.setItem('last_viewed_items', JSON.stringify(lastViewedMap));
-	}
-
-	function getLastViewed(sezione) {
-		if (!getSetting('rememberLast')) return null;
-		const lastViewedMap = JSON.parse(localStorage.getItem('last_viewed_items') || '{}');
-		return lastViewedMap[sezione] ?? null;
-	}
-	
-	// --- NORMALIZZAZIONE E FILTRI AVANZATI ---
-	function normalizeText(str) {
-		if (!str) return '';
-		return str.toString()
-			.toLowerCase()
-			.normalize("NFD")
-			.replace(/[\u0300-\u036f]/g, "")
-			.trim();
-	}
-
-	function toggleAdvancedFilters() {
-		vibrate();
-		const panel = document.getElementById('advanced-filters');
-		const btn = document.getElementById('btn-toggle-filters');
-		if (!panel || !btn) return;
-
-		const isOpen = panel.classList.toggle('open');
-		btn.classList.toggle('active', isOpen);
-	}
-
-	function updateAdvancedFiltersVisibility() {
-		const btn = document.getElementById('btn-toggle-filters');
-		const panel = document.getElementById('advanced-filters');
-		if (!btn) return;
-
-		if (currentSectionId === 'messaggi' || searchScope === 'tutto') {
-			btn.style.display = 'flex';
-		} else {
-			btn.style.display = 'none';
-			if (panel) panel.classList.remove('open');
-			if (btn) btn.classList.remove('active');
-			resetAdvancedSelects();
-		}
-	}
-
-	function resetAdvancedSelects() {
-		['filter-mittente', 'filter-destinatario', 'filter-anno'].forEach(id => {
-			const el = document.getElementById(id);
-			if (el) el.value = 'all';
+function disableWakeLock() {
+	if (wakeLockSentinel) {
+		wakeLockSentinel.release().then(() => {
+			wakeLockSentinel = null;
 		});
 	}
+}
 
-	function populateAdvancedFilters() {
-		const messaggi = dataStore.messaggi || [];
-		const mittenti = new Set();
-		const destinatari = new Set();
-		const anni = new Set();
+function toggleWakeLock(enabled) {
+	vibrate();
+	setSetting('keepScreenOn', enabled);
+	if (!enabled) disableWakeLock();
+}
 
-		messaggi.forEach(m => {
-			if (m.chiParla || m.mittente || m.autore) mittenti.add(m.chiParla || m.mittente || m.autore);
-			if (m.destinatario || m.ricevutoDa) destinatari.add(m.destinatario || m.ricevutoDa);
-			if (m.data || m.dataDisplay) {
-				const str = (m.data || '') + ' ' + (m.dataDisplay || '');
-				const matchAnno = str.match(/\b(19|20)\d{2}\b/);
-				if (matchAnno) anni.add(matchAnno[0]);
-			}
-		});
+// GESTIONE ULTIMO ELEMENTO
+function toggleRememberLast(enabled) {
+	vibrate();
+	setSetting('rememberLast', enabled);
+}
 
-		const selectMittente = document.getElementById('filter-mittente');
-		if (selectMittente) {
-			selectMittente.innerHTML = '<option value="all">Tutti i mittenti</option>' +
-				Array.from(mittenti).sort().map(m => `<option value="${m}">${m}</option>`).join('');
-		}
+function saveLastViewed(sezione, index) {
+	if (!getSetting('rememberLast')) return;
+	const lastViewedMap = JSON.parse(localStorage.getItem('last_viewed_items') || '{}');
+	lastViewedMap[sezione] = index;
+	localStorage.setItem('last_viewed_items', JSON.stringify(lastViewedMap));
+}
 
-		const selectDestinatario = document.getElementById('filter-destinatario');
-		if (selectDestinatario) {
-			selectDestinatario.innerHTML = '<option value="all">Tutti i destinatari</option>' +
-				Array.from(destinatari).sort().map(d => `<option value="${d}">${d}</option>`).join('');
-		}
+function getLastViewed(sezione) {
+	if (!getSetting('rememberLast')) return null;
+	const lastViewedMap = JSON.parse(localStorage.getItem('last_viewed_items') || '{}');
+	return lastViewedMap[sezione] ?? null;
+}
 
-		const selectAnno = document.getElementById('filter-anno');
-		if (selectAnno) {
-			selectAnno.innerHTML = '<option value="all">Tutti gli anni</option>' +
-				Array.from(anni).sort((a,b) => b - a).map(a => `<option value="${a}">${a}</option>`).join('');
-		}
+// GESTIONE PREFERITI
+function getFavorites() {
+    return JSON.parse(localStorage.getItem('pwa_favorites') || '[]');
+}
+
+function isFavorite(sezione, item) {
+    const favorites = getFavorites();
+    const title = itemTitolo(sezione, item);
+    return favorites.some(f => f.sezione === sezione && f.titolo === title);
+}
+
+function toggleFavoriteCurrent() {
+    vibrate();
+    if (!currentDetailRef) return;
+    const { sezione, index } = currentDetailRef;
+    const item = currentList[index];
+    if (!item) return;
+
+    const title = itemTitolo(sezione, item);
+    let favorites = getFavorites();
+    const existsIndex = favorites.findIndex(f => f.sezione === sezione && f.titolo === title);
+
+    if (existsIndex >= 0) {
+        favorites.splice(existsIndex, 1);
+    } else {
+        favorites.push({ sezione: sezione, titolo: title });
+    }
+
+    localStorage.setItem('pwa_favorites', JSON.stringify(favorites));
+    updateFavoriteButtonState(sezione, item);
+    
+    if (currentView === 'preferiti-globali') {
+        renderPreferitiGlobali();
+    }
+}
+
+function updateFavoriteButtonState(sezione, item) {
+    const btn = document.getElementById('btn-favorite-detail');
+    if (!btn) return;
+    const fav = isFavorite(sezione, item);
+    btn.textContent = fav ? '★ Preferito' : '☆ Preferito';
+    btn.style.fontWeight = fav ? 'bold' : 'normal';
+}
+
+function showPreferitiGlobali() {
+    vibrate();
+    currentView = 'preferiti-globali';
+    document.body.setAttribute('data-section', 'preferiti');
+    document.getElementById('section-picker-label').textContent = '⭐ Preferiti';
+    document.getElementById('scope-row').style.display = 'none';
+    document.getElementById('filter-chips').style.display = 'none';
+    updateAdvancedFiltersVisibility();
+    showListView();
+    renderPreferitiGlobali();
+}
+
+function renderPreferitiGlobali() {
+    const favorites = getFavorites();
+    let items = [];
+    let sections = [];
+
+    favorites.forEach(fav => {
+        const list = dataStore[fav.sezione] || [];
+        const found = list.find(it => itemTitolo(fav.sezione, it) === fav.titolo);
+        if (found) {
+            items.push(found);
+            sections.push(fav.sezione);
+        }
+    });
+
+    renderList(items, sections);
+}
+
+// CONDIVISIONE TESTO
+function shareCurrent() {
+    vibrate();
+    if (!currentDetailRef) return;
+    const { sezione, index } = currentDetailRef;
+    const item = currentList[index];
+    if (!item) return;
+
+    const title = itemTitolo(sezione, item);
+    const text = item.testo || item.corpo || '';
+
+    if (navigator.share) {
+        navigator.share({ title: title, text: title + '\n\n' + text }).catch(() => {});
+    } else if (navigator.clipboard) {
+        navigator.clipboard.writeText(title + '\n\n' + text);
+        alert('Testo copiato negli appunti!');
+    }
+}
+
+// NORMALIZZAZIONE E FILTRI
+function normalizeText(str) {
+	if (!str) return '';
+	return str.toString()
+		.toLowerCase()
+		.normalize("NFD")
+		.replace(/[\u0300-\u036f]/g, "")
+		.trim();
+}
+
+function toggleAdvancedFilters() {
+	vibrate();
+	const panel = document.getElementById('advanced-filters');
+	const btn = document.getElementById('btn-toggle-filters');
+	if (!panel || !btn) return;
+
+	const isOpen = panel.classList.toggle('open');
+	btn.classList.toggle('active', isOpen);
+}
+
+function updateAdvancedFiltersVisibility() {
+	const btn = document.getElementById('btn-toggle-filters');
+	const panel = document.getElementById('advanced-filters');
+	if (!btn) return;
+
+	if (currentSectionId === 'messaggi' || searchScope === 'tutto') {
+		btn.style.display = 'flex';
+	} else {
+		btn.style.display = 'none';
+		if (panel) panel.classList.remove('open');
+		if (btn) btn.classList.remove('active');
+		resetAdvancedSelects();
 	}
-const API_URL = 'https://script.google.com/macros/s/AKfycbyACljxIfQNMcOUzG-LGDCABjNgfHiAw9mrE8Uwl0x1Krh0_4bTL0eKd_Z9KPZOQfk/exec'; // Incolla qui il tuo link unico
+}
+
+function resetAdvancedSelects() {
+	['filter-mittente', 'filter-destinatario', 'filter-anno'].forEach(id => {
+		const el = document.getElementById(id);
+		if (el) el.value = 'all';
+	});
+}
+
+function populateAdvancedFilters() {
+	const messaggi = dataStore.messaggi || [];
+	const mittenti = new Set();
+	const destinatari = new Set();
+	const anni = new Set();
+
+	messaggi.forEach(m => {
+		if (m.chiParla || m.mittente || m.autore) mittenti.add(m.chiParla || m.mittente || m.autore);
+		if (m.destinatario || m.ricevutoDa) destinatari.add(m.destinatario || m.ricevutoDa);
+		if (m.data || m.dataDisplay) {
+			const str = (m.data || '') + ' ' + (m.dataDisplay || '');
+			const matchAnno = str.match(/\b(19|20)\d{2}\b/);
+			if (matchAnno) anni.add(matchAnno[0]);
+		}
+	});
+
+	const selectMittente = document.getElementById('filter-mittente');
+	if (selectMittente) {
+		selectMittente.innerHTML = '<option value="all">Tutti i mittenti</option>' +
+			Array.from(mittenti).sort().map(m => `<option value="${m}">${m}</option>`).join('');
+	}
+
+	const selectDestinatario = document.getElementById('filter-destinatario');
+	if (selectDestinatario) {
+		selectDestinatario.innerHTML = '<option value="all">Tutti i destinatari</option>' +
+			Array.from(destinatari).sort().map(d => `<option value="${d}">${d}</option>`).join('');
+	}
+
+	const selectAnno = document.getElementById('filter-anno');
+	if (selectAnno) {
+		selectAnno.innerHTML = '<option value="all">Tutti gli anni</option>' +
+			Array.from(anni).sort((a,b) => b - a).map(a => `<option value="${a}">${a}</option>`).join('');
+	}
+}
 
 async function loadAll() {
 	const container = document.getElementById('items-list');
@@ -657,221 +746,229 @@ async function loadAll() {
 	applyFontSize();
 }
 
-	function sezioneCfg(id) { return SEZIONI.find(s => s.id === id); }
-	function itemTitolo(sezioneId, item) { const cfg = sezioneCfg(sezioneId); return item[cfg ? cfg.titoloField : 'titolo'] || ''; }
+function sezioneCfg(id) { return SEZIONI.find(s => s.id === id); }
+function itemTitolo(sezioneId, item) { const cfg = sezioneCfg(sezioneId); return item[cfg ? cfg.titoloField : 'titolo'] || ''; }
 
-	function applyFilters() {
-		if (currentView === 'preferiti-globali') { 
-			renderPreferitiGlobali(); 
-			return; 
+function applyFilters() {
+	if (currentView === 'preferiti-globali') { 
+		renderPreferitiGlobali(); 
+		return; 
+	}
+
+	const query = normalizeText(document.getElementById('search-bar')?.value.trim() || '');
+	const selectedMittente = document.getElementById('filter-mittente')?.value || 'all';
+	const selectedDestinatario = document.getElementById('filter-destinatario')?.value || 'all';
+	const selectedAnno = document.getElementById('filter-anno')?.value || 'all';
+
+	function matchesItem(item, sectionConfig) {
+		if (selectedMittente !== 'all') {
+			const itemMittente = normalizeText(item.chiParla || item.mittente || item.autore || '');
+			if (itemMittente !== normalizeText(selectedMittente)) return false;
 		}
 
-		const query = normalizeText(document.getElementById('search-bar')?.value.trim() || '');
-		const selectedMittente = document.getElementById('filter-mittente')?.value || 'all';
-		const selectedDestinatario = document.getElementById('filter-destinatario')?.value || 'all';
-		const selectedAnno = document.getElementById('filter-anno')?.value || 'all';
-
-		function matchesItem(item, sectionConfig) {
-			if (selectedMittente !== 'all') {
-				const itemMittente = normalizeText(item.chiParla || item.mittente || item.autore || '');
-				if (itemMittente !== normalizeText(selectedMittente)) return false;
-			}
-
-			if (selectedDestinatario !== 'all') {
-				const itemDestinatario = normalizeText(item.destinatario || item.ricevutoDa || '');
-				if (itemDestinatario !== normalizeText(selectedDestinatario)) return false;
-			}
-
-			if (selectedAnno !== 'all') {
-				const itemDateStr = (item.data || '') + ' ' + (item.dataDisplay || '');
-				if (!itemDateStr.includes(selectedAnno)) return false;
-			}
-
-			if (query) {
-				const extraFields = ['testo', 'corpo', 'chiParla', 'destinatario', 'autore'];
-				const allSearchFields = Array.from(new Set([...(sectionConfig.searchFields || []), ...extraFields]));
-				const hay = allSearchFields.map(f => normalizeText(item[f] || '')).join(' ');
-				if (!hay.includes(query)) return false;
-			}
-
-			return true;
+		if (selectedDestinatario !== 'all') {
+			const itemDestinatario = normalizeText(item.destinatario || item.ricevutoDa || '');
+			if (itemDestinatario !== normalizeText(selectedDestinatario)) return false;
 		}
 
-		if (searchScope === 'tutto') {
-			let results = []; 
-			let resultSections = [];
+		if (selectedAnno !== 'all') {
+			const itemDateStr = (item.data || '') + ' ' + (item.dataDisplay || '');
+			if (!itemDateStr.includes(selectedAnno)) return false;
+		}
 
-			SEZIONI.forEach(s => {
-				(dataStore[s.id] || []).forEach(it => {
-					if (matchesItem(it, s)) {
-						results.push(it);
-						resultSections.push(s.id);
-					}
-				});
+		if (query) {
+			const extraFields = ['testo', 'corpo', 'chiParla', 'destinatario', 'autore'];
+			const allSearchFields = Array.from(new Set([...(sectionConfig.searchFields || []), ...extraFields]));
+			const hay = allSearchFields.map(f => normalizeText(item[f] || '')).join(' ');
+			if (!hay.includes(query)) return false;
+		}
+
+		return true;
+	}
+
+	if (searchScope === 'tutto') {
+		let results = []; 
+		let resultSections = [];
+
+		SEZIONI.forEach(s => {
+			(dataStore[s.id] || []).forEach(it => {
+				if (matchesItem(it, s)) {
+					results.push(it);
+					resultSections.push(s.id);
+				}
 			});
-
-			renderList(results, resultSections);
-			return;
-		}
-
-		const currentSec = SEZIONI.find(s => s.id === currentSectionId) || { searchFields: [] };
-		let currentItems = dataStore[currentSectionId] || [];
-
-		// Filtro Categoria/Chip attivo
-		const activeFilter = activeFilterBySection[currentSectionId] || null;
-		if (activeFilter) {
-			currentItems = currentItems.filter(it => 
-				currentSec.filtroTipo === 'array' ? (it[currentSec.filtroField] || []).includes(activeFilter) : it[currentSec.filtroField] === activeFilter
-			);
-		}
-
-		const filtered = currentItems.filter(it => matchesItem(it, currentSec));
-		renderList(filtered, filtered.map(() => currentSectionId));
-	}
-
-	function renderList(items, sections) {
-		const container = document.getElementById('items-list');
-		container.innerHTML = '';
-		if (!items || items.length === 0) { 
-			container.innerHTML = '<div class="no-results">Nessun risultato trovato.</div>'; 
-			return; 
-		}
-		
-		currentList = items;
-		const showBadge = searchScope === 'tutto' || currentView === 'preferiti-globali';
-
-		items.forEach((item, idx) => {
-			const sezione = sections ? sections[idx] : currentSectionId;
-			const cfg = sezioneCfg(sezione);
-			const card = document.createElement('div');
-			card.className = 'item-card';
-			card.onclick = () => { vibrate(); showDetail(sezione, idx, items, sections); };
-
-			const info = document.createElement('div');
-			info.className = 'item-card-info';
-			
-			if (showBadge && cfg) { 
-				const b = document.createElement('div'); 
-				b.className = 'item-badge'; 
-				b.textContent = cfg.badge + ' ' + cfg.label.replace(/^\S+\s/, ''); 
-				info.appendChild(b); 
-			}
-
-			const titleEl = document.createElement('div'); 
-			titleEl.className = 'item-card-title'; 
-			titleEl.textContent = itemTitolo(sezione, item);
-
-			const metaEl = document.createElement('div'); 
-			metaEl.className = 'item-card-meta'; 
-			metaEl.textContent = cfg ? cfg.sottotitolo(item) : '';
-
-			const snippetEl = document.createElement('div'); 
-			snippetEl.className = 'item-card-snippet';
-			snippetEl.textContent = (item.testo || item.corpo || '').replace(/\s+/g, ' ').slice(0, 100) + '...';
-
-			info.appendChild(titleEl); 
-			info.appendChild(metaEl); 
-			info.appendChild(snippetEl);
-
-			card.appendChild(info);
-			container.appendChild(card);
-		});
-	}
-
-	function showDetail(sezione, idx, list, sections) {
-		if (!list || idx < 0 || idx >= list.length) return;
-		
-		const realSection = (sections && sections[idx]) ? sections[idx] : sezione;
-		currentSectionId = realSection;
-		currentList = list;
-		currentDetailRef = { sezione: realSection, index: idx };
-
-		const item = list[idx];
-		if (!item) return;
-
-		const cfg = sezioneCfg(realSection);
-		document.getElementById('detail-title').textContent = itemTitolo(realSection, item);
-		document.getElementById('detail-subinfo').textContent = cfg ? cfg.sottotitolo(item) : '';
-		document.getElementById('detail-badge').textContent = cfg ? (cfg.badge + ' ' + cfg.label) : '';
-		document.getElementById('detail-body').innerHTML = item.testo || item.corpo || '';
-
-		document.getElementById('btn-prev').disabled = (idx <= 0);
-		document.getElementById('btn-next').disabled = (idx >= list.length - 1);
-
-		document.getElementById('list-view').style.display = 'none';
-		const detailView = document.getElementById('detail-view');
-		detailView.style.display = 'block';
-		window.scrollTo({ top: 0, behavior: 'instant' });
-		updateFavoriteButtonState(realSection, item);
-	}
-
-	function showListView() {
-		vibrate();
-		document.getElementById('detail-view').style.display = 'none';
-		document.getElementById('list-view').style.display = 'block';
-	}
-
-	function switchSection(sezione) {
-		document.getElementById('scope-row').style.display = 'flex';
-		document.getElementById('filter-chips').style.display = 'flex';
-		if (!SEZIONI.some(s => s.id === sezione)) return;
-		currentSectionId = sezione;
-		currentView = 'sezione';
-
-		document.body.setAttribute('data-section', sezione);
-		document.getElementById('search-bar').value = '';
-		resetAdvancedSelects();
-		updateAdvancedFiltersVisibility();
-		
-		showListView();
-		renderSectionPickerLabel();
-		renderFilterChips();
-		applyFilters();
-	}
-
-	function setScope(scope) {
-		vibrate();
-		searchScope = scope;
-		document.getElementById('scope-sezione').classList.toggle('active', scope === 'sezione');
-		document.getElementById('scope-tutto').classList.toggle('active', scope === 'tutto');
-		document.getElementById('filter-chips').style.display = scope === 'tutto' ? 'none' : 'flex';
-		updateAdvancedFiltersVisibility();
-		applyFilters();
-	}
-
-	function renderFilterChips() {
-		const container = document.getElementById('filter-chips');
-		if (!container || currentView !== 'sezione') return;
-		container.innerHTML = '';
-		
-		const cfg = sezioneCfg(currentSectionId);
-		const items = dataStore[currentSectionId] || [];
-		const activeFilter = activeFilterBySection[currentSectionId] || null;
-
-		const allChip = document.createElement('button');
-		allChip.className = 'filter-chip' + (!activeFilter ? ' active' : '');
-		allChip.textContent = 'Tutti';
-		allChip.onclick = () => { vibrate(); activeFilterBySection[currentSectionId] = null; renderFilterChips(); applyFilters(); };
-		container.appendChild(allChip);
-
-		let values = new Set();
-		items.forEach(it => {
-			const v = it[cfg.filtroField];
-			if (cfg.filtroTipo === 'array') (v || []).forEach(x => values.add(x));
-			else if (v) values.add(v);
 		});
 
-		Array.from(values).sort().forEach(val => {
-			const chip = document.createElement('button');
-			chip.className = 'filter-chip' + (activeFilter === val ? ' active' : '');
-			chip.textContent = val;
-			chip.onclick = () => { vibrate(); activeFilterBySection[currentSectionId] = (activeFilter === val) ? null : val; renderFilterChips(); applyFilters(); };
-			container.appendChild(chip);
-		});
+		renderList(results, resultSections);
+		return;
 	}
 
-	function prevItem() { vibrate(); if (currentDetailRef && currentDetailRef.index > 0) showDetail(currentDetailRef.sezione, currentDetailRef.index - 1, currentList); }
-	function nextItem() { vibrate(); if (currentDetailRef && currentDetailRef.index < currentList.length - 1) showDetail(currentDetailRef.sezione, currentDetailRef.index + 1, currentList); }
+	const currentSec = SEZIONI.find(s => s.id === currentSectionId) || { searchFields: [] };
+	let currentItems = dataStore[currentSectionId] || [];
+
+	const activeFilter = activeFilterBySection[currentSectionId] || null;
+	if (activeFilter) {
+		currentItems = currentItems.filter(it => 
+			currentSec.filtroTipo === 'array' ? (it[currentSec.filtroField] || []).includes(activeFilter) : it[currentSec.filtroField] === activeFilter
+		);
+	}
+
+	const filtered = currentItems.filter(it => matchesItem(it, currentSec));
+	renderList(filtered, filtered.map(() => currentSectionId));
+}
+
+function renderList(items, sections) {
+	const container = document.getElementById('items-list');
+	container.innerHTML = '';
+	if (!items || items.length === 0) { 
+		container.innerHTML = '<div class="no-results">Nessun risultato trovato.</div>'; 
+		return; 
+	}
+	
+	currentList = items;
+	const showBadge = searchScope === 'tutto' || currentView === 'preferiti-globali';
+
+	items.forEach((item, idx) => {
+		const sezione = sections ? sections[idx] : currentSectionId;
+		const cfg = sezioneCfg(sezione);
+		const card = document.createElement('div');
+		card.className = 'item-card';
+		card.onclick = () => { vibrate(); showDetail(sezione, idx, items, sections); };
+
+		const info = document.createElement('div');
+		info.className = 'item-card-info';
+		
+		if (showBadge && cfg) { 
+			const b = document.createElement('div'); 
+			b.className = 'item-badge'; 
+			b.textContent = cfg.badge + ' ' + cfg.label.replace(/^\S+\s/, ''); 
+			info.appendChild(b); 
+		}
+
+		const titleEl = document.createElement('div'); 
+		titleEl.className = 'item-card-title'; 
+		titleEl.textContent = itemTitolo(sezione, item);
+
+		const metaEl = document.createElement('div'); 
+		metaEl.className = 'item-card-meta'; 
+		metaEl.textContent = cfg ? cfg.sottotitolo(item) : '';
+
+		const snippetEl = document.createElement('div'); 
+		snippetEl.className = 'item-card-snippet';
+		snippetEl.textContent = (item.testo || item.corpo || '').replace(/\s+/g, ' ').slice(0, 100) + '...';
+
+		info.appendChild(titleEl); 
+		info.appendChild(metaEl); 
+		info.appendChild(snippetEl);
+
+		card.appendChild(info);
+		container.appendChild(card);
+	});
+}
+
+function showDetail(sezione, idx, list, sections) {
+	if (!list || idx < 0 || idx >= list.length) return;
+	
+	const realSection = (sections && sections[idx]) ? sections[idx] : sezione;
+	currentSectionId = realSection;
+	currentList = list;
+	currentDetailRef = { sezione: realSection, index: idx };
+
+	const item = list[idx];
+	if (!item) return;
+
+	enableWakeLock();
+	saveLastViewed(realSection, idx);
+
+	const cfg = sezioneCfg(realSection);
+	document.getElementById('detail-title').textContent = itemTitolo(realSection, item);
+	document.getElementById('detail-subinfo').textContent = cfg ? cfg.sottotitolo(item) : '';
+	document.getElementById('detail-badge').textContent = cfg ? (cfg.badge + ' ' + cfg.label) : '';
+	document.getElementById('detail-body').innerHTML = item.testo || item.corpo || '';
+
+	document.getElementById('btn-prev').disabled = (idx <= 0);
+	document.getElementById('btn-next').disabled = (idx >= list.length - 1);
+
+	document.getElementById('list-view').style.display = 'none';
+	const detailView = document.getElementById('detail-view');
+	detailView.style.display = 'block';
+	window.scrollTo({ top: 0, behavior: 'instant' });
+	updateFavoriteButtonState(realSection, item);
+}
+
+function showListView() {
+	vibrate();
+	disableWakeLock();
+	document.getElementById('detail-view').style.display = 'none';
+	document.getElementById('list-view').style.display = 'block';
+}
+
+function switchSection(sezione) {
+	document.getElementById('scope-row').style.display = 'flex';
+	document.getElementById('filter-chips').style.display = 'flex';
+	if (!SEZIONI.some(s => s.id === sezione)) return;
+	currentSectionId = sezione;
+	currentView = 'sezione';
+
+	document.body.setAttribute('data-section', sezione);
+	document.getElementById('search-bar').value = '';
+	resetAdvancedSelects();
+	updateAdvancedFiltersVisibility();
+	
+	showListView();
+	renderSectionPickerLabel();
+	renderFilterChips();
+	applyFilters();
+
+	const lastIdx = getLastViewed(sezione);
+	if (lastIdx !== null && dataStore[sezione]?.[lastIdx]) {
+		showDetail(sezione, lastIdx, dataStore[sezione]);
+	}
+}
+
+function setScope(scope) {
+	vibrate();
+	searchScope = scope;
+	document.getElementById('scope-sezione').classList.toggle('active', scope === 'sezione');
+	document.getElementById('scope-tutto').classList.toggle('active', scope === 'tutto');
+	document.getElementById('filter-chips').style.display = scope === 'tutto' ? 'none' : 'flex';
+	updateAdvancedFiltersVisibility();
+	applyFilters();
+}
+
+function renderFilterChips() {
+	const container = document.getElementById('filter-chips');
+	if (!container || currentView !== 'sezione') return;
+	container.innerHTML = '';
+	
+	const cfg = sezioneCfg(currentSectionId);
+	const items = dataStore[currentSectionId] || [];
+	const activeFilter = activeFilterBySection[currentSectionId] || null;
+
+	const allChip = document.createElement('button');
+	allChip.className = 'filter-chip' + (!activeFilter ? ' active' : '');
+	allChip.textContent = 'Tutti';
+	allChip.onclick = () => { vibrate(); activeFilterBySection[currentSectionId] = null; renderFilterChips(); applyFilters(); };
+	container.appendChild(allChip);
+
+	let values = new Set();
+	items.forEach(it => {
+		const v = it[cfg.filtroField];
+		if (cfg.filtroTipo === 'array') (v || []).forEach(x => values.add(x));
+		else if (v) values.add(v);
+	});
+
+	Array.from(values).sort().forEach(val => {
+		const chip = document.createElement('button');
+		chip.className = 'filter-chip' + (activeFilter === val ? ' active' : '');
+		chip.textContent = val;
+		chip.onclick = () => { vibrate(); activeFilterBySection[currentSectionId] = (activeFilter === val) ? null : val; renderFilterChips(); applyFilters(); };
+		container.appendChild(chip);
+	});
+}
+
+function prevItem() { vibrate(); if (currentDetailRef && currentDetailRef.index > 0) showDetail(currentDetailRef.sezione, currentDetailRef.index - 1, currentList); }
+function nextItem() { vibrate(); if (currentDetailRef && currentDetailRef.index < currentList.length - 1) showDetail(currentDetailRef.sezione, currentDetailRef.index + 1, currentList); }
 
 function renderDropdown() {
     const menu = document.getElementById('dropdown-menu');
@@ -893,25 +990,30 @@ function renderDropdown() {
     menu.appendChild(favEl);
 }
 
-	function toggleDropdown() { vibrate(); renderDropdown(); document.getElementById('dropdown-overlay').classList.toggle('active'); }
-	function closeDropdown() { document.getElementById('dropdown-overlay').classList.remove('active'); }
-	function renderSectionPickerLabel() { document.getElementById('section-picker-label').textContent = sezioneCfg(currentSectionId)?.label || ''; }
+function toggleDropdown() { vibrate(); renderDropdown(); document.getElementById('dropdown-overlay').classList.toggle('active'); }
+function closeDropdown() { document.getElementById('dropdown-overlay').classList.remove('active'); }
+function renderSectionPickerLabel() { document.getElementById('section-picker-label').textContent = sezioneCfg(currentSectionId)?.label || ''; }
 
-	function openSettings() { vibrate(); document.getElementById('settings-modal').classList.add('active'); }
-	function closeSettings() { vibrate(); document.getElementById('settings-modal').classList.remove('active'); }
-	function closeSettingsOnOverlay(e) { if (e.target.id === 'settings-modal') closeSettings(); }
+function openSettings() { 
+	vibrate(); 
+	document.getElementById('toggle-wakelock').checked = getSetting('keepScreenOn');
+	document.getElementById('toggle-remember-last').checked = getSetting('rememberLast');
+	document.getElementById('settings-modal').classList.add('active'); 
+}
+function closeSettings() { vibrate(); document.getElementById('settings-modal').classList.remove('active'); }
+function closeSettingsOnOverlay(e) { if (e.target.id === 'settings-modal') closeSettings(); }
 
-	function changeFontSize(dir) { vibrate(); currentFontSize += dir * 0.1; applyFontSize(); }
-	function applyFontSize() { 
-		document.documentElement.style.setProperty('--content-font-scale', currentFontSize / BASE_FONT_SIZE); 
-		document.getElementById('font-size-value').textContent = Math.round((currentFontSize/BASE_FONT_SIZE)*100) + '%';
-	}
-	function toggleTheme() { vibrate(); const cur = document.documentElement.getAttribute('data-theme'); document.documentElement.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark'); }
-	function vibrate() { if ('vibrate' in navigator) try { navigator.vibrate(15); } catch(e){} }
+function changeFontSize(dir) { vibrate(); currentFontSize += dir * 0.1; applyFontSize(); }
+function applyFontSize() { 
+	document.documentElement.style.setProperty('--content-font-scale', currentFontSize / BASE_FONT_SIZE); 
+	document.getElementById('font-size-value').textContent = Math.round((currentFontSize/BASE_FONT_SIZE)*100) + '%';
+}
+function toggleTheme() { vibrate(); const cur = document.documentElement.getAttribute('data-theme'); document.documentElement.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark'); }
+function vibrate() { if ('vibrate' in navigator) try { navigator.vibrate(15); } catch(e){} }
 
-	document.addEventListener('DOMContentLoaded', () => {
-		loadAll();
-	});
+document.addEventListener('DOMContentLoaded', () => {
+	loadAll();
+});
 </script>
 </body>
 </html>
