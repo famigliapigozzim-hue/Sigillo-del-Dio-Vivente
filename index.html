@@ -101,7 +101,16 @@
 			--header-bg: #0f172a;
 		}
 	}
-	
+	/* Stile specifico per il pulsante YouTube nel Dettaglio */
+	#btn-youtube-detail {
+  		background-color: #ff0000 !important; /* Rosso YouTube */
+  		color: white !important;             /* Testo bianco */
+  		border-color: #ff0000 !important;    /* Bordo rosso (se visibile) */
+	}
+	/* Effetto hover (quando ci passi sopra col mouse) */
+		#btn-youtube-detail:hover {
+  		background-color: #cc0000 !important; /* Un rosso più scuro al passaggio */
+	}
 	/* =========================================================
 	4. STILI GENERALI & RESET
 	========================================================= */
@@ -324,6 +333,22 @@
 	.btn-back { padding: 0.4rem 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--card-border); background: var(--card-bg); color: var(--text-color); cursor: pointer; }
 	#detail-body { font-size: calc(1rem * var(--content-font-scale, 1)); line-height: 1.7; white-space: pre-wrap; word-break: break-word; margin-top: 1rem; }
 
+	.btn-yt-card {
+	background: transparent;
+	border: none;
+	font-size: 1.3rem;
+	cursor: pointer;
+	padding: 0.4rem;
+	border-radius: var(--radius-sm);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	line-height: 1;
+}
+.btn-yt-card:hover {
+	opacity: 0.8;
+}
+	
 	/* DROPDOWN & MODALE */
 	.dropdown-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); display: none; z-index: 150; }
 	.dropdown-overlay.active { display: block; }
@@ -402,6 +427,7 @@
 			<div class="detail-actions" style="margin-top:0.5rem;">
 				<button class="btn-back" id="btn-favorite-detail" onclick="toggleFavoriteCurrent()">☆ Preferito</button>
 				<button class="btn-back" id="btn-share-detail" onclick="shareCurrent()">📤 Condividi</button>
+				<button class="btn-back" id="btn-youtube-detail" onclick="openYouTubeCurrent()">▶️ YouTube</button>
 			</div>
 			<div id="detail-body"></div>
 		</div>
@@ -624,7 +650,27 @@ function renderPreferitiGlobali() {
 
     renderList(items, sections);
 }
+// Apertura link Youtube per i Canti
+function openYouTube(sezione, item) {
+	if (!item) return;
+	const title = itemTitolo(sezione, item);
+	let ytUrl = (item.youtube || '').trim();
 
+	// Se il link è vuoto, genera l'URL di ricerca automatica su YouTube
+	if (!ytUrl) {
+		ytUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(title + ' canto')}`;
+	}
+
+	window.open(ytUrl, '_blank');
+}
+
+function openYouTubeCurrent() {
+	vibrate();
+	if (!currentDetailRef) return;
+	const { sezione, index } = currentDetailRef;
+	const item = currentList[index];
+	openYouTube(sezione, item);
+}
 // CONDIVISIONE TESTO
 function shareCurrent() {
     vibrate();
@@ -805,12 +851,19 @@ function applyFilters() {
 
 	const currentSec = SEZIONI.find(s => s.id === currentSectionId) || { searchFields: [] };
 	let currentItems = dataStore[currentSectionId] || [];
-
+	
+	// Filtro Categoria/Chip attivo
 	const activeFilter = activeFilterBySection[currentSectionId] || null;
 	if (activeFilter) {
-		currentItems = currentItems.filter(it => 
-			currentSec.filtroTipo === 'array' ? (it[currentSec.filtroField] || []).includes(activeFilter) : it[currentSec.filtroField] === activeFilter
-		);
+		currentItems = currentItems.filter(it => {
+			const val = it[currentSec.filtroField];
+			if (currentSec.filtroTipo === 'array') {
+				if (Array.isArray(val)) return val.includes(activeFilter);
+				if (typeof val === 'string') return val.split(',').map(s => s.trim()).includes(activeFilter);
+				return false;
+			}
+			return val === activeFilter;
+		});
 	}
 
 	const filtered = currentItems.filter(it => matchesItem(it, currentSec));
@@ -863,6 +916,20 @@ function renderList(items, sections) {
 
 		card.appendChild(info);
 		container.appendChild(card);
+
+		// Dentro renderList(), subito dopo card.appendChild(info):
+		if (sezione === 'canti') {
+			const ytBtn = document.createElement('button');
+			ytBtn.className = 'btn-yt-card';
+			ytBtn.innerHTML = '▶️';
+			ytBtn.title = 'Apri su YouTube';
+			ytBtn.onclick = (e) => {
+				e.stopPropagation(); // Impedisce l'apertura della schermata di dettaglio
+				vibrate();
+				openYouTube(sezione, item);
+			};
+		card.appendChild(ytBtn);
+		}
 	});
 }
 
@@ -894,6 +961,11 @@ function showDetail(sezione, idx, list, sections) {
 	detailView.style.display = 'block';
 	window.scrollTo({ top: 0, behavior: 'instant' });
 	updateFavoriteButtonState(realSection, item);
+	// Tasto Youtube
+	const btnYt = document.getElementById('btn-youtube-detail');
+	if (btnYt) {
+		btnYt.style.display = (realSection === 'canti') ? 'inline-block' : 'none';
+	}
 }
 
 function showListView() {
@@ -954,8 +1026,17 @@ function renderFilterChips() {
 	let values = new Set();
 	items.forEach(it => {
 		const v = it[cfg.filtroField];
-		if (cfg.filtroTipo === 'array') (v || []).forEach(x => values.add(x));
-		else if (v) values.add(v);
+		if (cfg.filtroTipo === 'array') {
+			let catArray = [];
+			if (Array.isArray(v)) {
+				catArray = v;
+			} else if (typeof v === 'string' && v.trim() !== '') {
+				catArray = v.split(',').map(s => s.trim());
+			}
+			catArray.forEach(x => { if (x) values.add(x); });
+		} else if (v) {
+			values.add(v);
+		}
 	});
 
 	Array.from(values).sort().forEach(val => {
