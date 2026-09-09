@@ -776,29 +776,59 @@ function populateAdvancedFilters() {
 	}
 }
 
+const LOCAL_STORAGE_KEY = 'sigillo_pwa_data_cache';
+
 async function loadAll() {
-	const container = document.getElementById('items-list');
-	if (container) container.innerHTML = '<div class="no-results">Caricamento...</div>';
-	
-	try {
-		const response = await fetch(API_URL);
-		const data = await response.json();
-		
-		SEZIONI.forEach(s => {
-			dataStore[s.id] = data[s.id] || [];
-		});
-	} catch (err) {
-		if (container) container.innerHTML = '<div class="no-results">Errore caricamento dati.</div>';
-		return;
+	// 1. CARICAMENTO ISTANTANEO DALLA MEMORIA LOCALE (SE PRESENTE)
+	const cachedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+	let hasCache = false;
+
+	if (cachedData) {
+		try {
+			const parsed = JSON.parse(cachedData);
+			if (parsed && typeof parsed === 'object') {
+				dataStore = parsed;
+				hasCache = true;
+				// Rendering immediato
+				renderFilterChips();
+				applyFilters();
+				console.log("⚡ Dati caricati all'istante dalla cache locale");
+			}
+		} catch (e) {
+			console.warn("Cache locale non valida o corrotta:", e);
+		}
 	}
 
-	populateAdvancedFilters();
-	updateAdvancedFiltersVisibility();
-	renderSectionPickerLabel();
-	renderFilterChips();
-	applyFilters();
-	document.body.setAttribute('data-section', currentSectionId);
-	applyFontSize();
+	// Se non c'è cache, mostriamo un indicatore o uno stato di caricamento nell'interfaccia
+	if (!hasCache) {
+		const listContainer = document.getElementById('item-list');
+		if (listContainer) {
+			listContainer.innerHTML = '<div style="text-align:center; padding:2rem; opacity:0.7;">Caricamento dati in corso...</div>';
+		}
+	}
+
+	// 2. CONTROLLO AGGIORNAMENTI DA GOOGLE APPS SCRIPT (IN BACKGROUND)
+	try {
+		// Sostituisci SCRIPT_URL con la tua variabile contenente l'URL di Apps Script
+		const response = await fetch(SCRIPT_URL); 
+		if (!response.ok) throw new Error('Errore di rete: ' + response.status);
+
+		const freshData = await response.json();
+
+		if (freshData && typeof freshData === 'object') {
+			// Confronta e aggiorna la memoria locale solo se ci sono dati validi
+			dataStore = freshData;
+			localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(freshData));
+
+			// Rinfresca l'interfaccia grafica con i dati aggiornati
+			renderFilterChips();
+			applyFilters();
+			console.log("🔄 Dati sincronizzati con Google Fogli");
+		}
+	} catch (error) {
+		console.error("Impossibile aggiornare i dati da remoto (modalità offline o errore rete):", error);
+		// Se la rete fallisce ma avevamo la cache, l'utente continua a usare l'app senza interruzioni!
+	}
 }
 
 function sezioneCfg(id) { return SEZIONI.find(s => s.id === id); }
