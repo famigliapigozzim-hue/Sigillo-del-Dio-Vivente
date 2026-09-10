@@ -810,7 +810,7 @@ async function loadAll() {
 	// 2. CONTROLLO AGGIORNAMENTI DA GOOGLE APPS SCRIPT (IN BACKGROUND)
 	try {
 		// Sostituisci SCRIPT_URL con la tua variabile contenente l'URL di Apps Script
-		const response = await fetch(SCRIPT_URL); 
+		const response = await fetch(API_URL); 
 		if (!response.ok) throw new Error('Errore di rete: ' + response.status);
 
 		const freshData = await response.json();
