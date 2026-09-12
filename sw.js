@@ -1,76 +1,102 @@
-const CACHE_NAME = 'nel-sigillo-app-cache-v20260910-01';
+const CACHE_NAME = 'nel-sigillo-app-cache-v20260912-cl2-01';
+
 const ASSETS = [
-    '/',
-    '/index.html',
-    '/manifest.json',
-    '/favicon.ico',
-    '/canti.json',
-    '/messaggi.json',
-    '/preghiere.json'
+  './',
+  './index.html',
+  './manifest.json',
+  './favicon.ico',
+  './canti.json',
+  './messaggi.json',
+  './preghiere.json'
 ];
 
-// 1. Installazione: salva la pagina principale in cache
+// Installazione: prepara la cache dell'app.
+// Se un singolo asset non è disponibile, l'installazione non deve fallire
+// completamente: gli asset verranno comunque recuperati dalla rete quando richiesti.
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
-  );
-  self.skipWaiting();
-});
+    caches.open(CACHE_NAME).then(async (cache) => {
+      await Promise.all(
+        ASSETS.map(async (asset) => {
+          try {
+            const response = await fetch(asset, { cache: 'no-cache' });
 
-// 2. Attivazione: pulisci le vecchie cache
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) return caches.delete(key);
-        })
-      );
-    })
-  );
-  self.clients.claim();
-});
-
-// 2. Attivazione: pulisci le vecchie cache
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) return caches.delete(key);
-        })
-      );
-    })
-  );
-  self.clients.claim();
-});
-
-// 3. Gestione richieste: restituisci prima la cache locale, poi tenta la rete
-self.addEventListener('fetch', (event) => {
-  // Ignora le chiamate a Google Apps Script (sono già gestite da localStorage in index.html)
-  if (event.request.url.includes('script.google.com')) return;
-
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        // Ritorna subito il file cached (index.html, ecc.)
-        fetch(event.request).then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, networkResponse));
+            if (response.ok) {
+              await cache.put(asset, response);
+            }
+          } catch (error) {
+            // Asset non disponibile: verrà richiesto dalla rete al bisogno.
           }
-        }).catch(() => {});
-        return cachedResponse;
-      }
-      return fetch(event.request);
+        })
+      );
     })
   );
 });
 
-// Gestione messaggi di aggiornamento
+// Attivazione: elimina le vecchie cache e prende immediatamente il controllo.
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(
+        keys
+          .filter((key) => key !== CACHE_NAME)
+          .map((key) => caches.delete(key))
+      )
+    ).then(() => self.clients.claim())
+  );
+});
+
+// Richiesta aggiornamento immediato dal client.
+// index_CL_2.0 usa SKIP_WAITING.
 self.addEventListener('message', (event) => {
-  if (event.data && event.data.action === 'skipWaiting') {
+  if (
+    event.data &&
+    (
+      event.data.type === 'SKIP_WAITING' ||
+      event.data.action === 'skipWaiting'
+    )
+  ) {
     self.skipWaiting();
   }
+});
+
+// Strategia:
+// - Google Apps Script: sempre rete, perché il contenuto viene gestito da
+//   localStorage/index.html.
+// - Asset statici e JSON locali: cache-first con aggiornamento in background.
+// - Risorse non in cache: rete; se la rete fallisce, prova la cache.
+self.addEventListener('fetch', (event) => {
+  const request = event.request;
+
+  // Gestiamo solo richieste GET.
+  if (request.method !== 'GET') return;
+
+  // Le API Google Apps Script non devono essere intercettate dal SW.
+  if (request.url.includes('script.google.com')) return;
+
+  event.respondWith(
+    caches.match(request).then((cachedResponse) => {
+      const networkFetch = fetch(request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.ok) {
+            return caches.open(CACHE_NAME).then((cache) => {
+              cache.put(request, networkResponse.clone());
+              return networkResponse;
+            });
+          }
+
+          return networkResponse;
+        });
+
+      // Se abbiamo la risorsa in cache, restituiamola subito e aggiorniamo
+      // la cache in background.
+      if (cachedResponse) {
+        networkFetch.catch(() => {});
+        return cachedResponse;
+      }
+
+      // Nessuna cache: attendiamo la rete.
+      return networkFetch.catch(() => caches.match(request));
+    })
+  );
 });
