@@ -1,5 +1,12 @@
 [
   {
+    "titolo": "SERVIAM — Il Cuore di Maria nel nostro cuore",
+    "categoria": "",
+    "tipo": "semplice",
+    "testo": "Padre nostro, Dio vivo e santo, noi Ti adoriamo, perché Tu sei il nostro Signore, il nostro Creatore e il nostro unico Bene. Tu ci hai chiamati per nome e ci hai donato la vita perché, in Cristo, diventassimo Tuoi figli e vivessimo in Te, con Te e per Te. Come San Michele Arcangelo, che davanti alla ribellione rimase fedele a Te, anche noi Ti scegliamo e, rinnovando il nostro \"SERVIAM\", Ti chiediamo di purificarci e di renderci servi pienamente conformi al Tuo Cuore. Conosciamo infatti la fragilità del nostro cuore e sappiamo quanto facilmente la nostra volontà possa prendere il posto della Tua. Che il nostro \"SERVIAM\", rinnovato ogni giorno, passi attraverso il Cuore di Maria, la Tua umilissima Serva. Il suo cuore abiti nel nostro. Lei, nostra Maestra, ci insegnerà a custodire la Tua Parola e a metterla in pratica. Padre, Tu sei il nostro Signore. Noi siamo Tuoi. SERVIAM! Amen.",
+    "id": "serviam-il-cuore-di-maria-nel-nostro-cuore-1789419390085"
+  },
+  {
     "id": "coroncina-preziosissimo-sangue",
     "titolo": "Coroncina al Preziosissimo Sangue",
     "categoria": "Coroncine",
@@ -15,7 +22,11 @@
     "tipo": "semplice",
     "testo": "O Maria, Madre mia, io mi affido totalmente a Te.\nCustodisci il mio cuore, guida i miei passi, veglia sulla mia giornata.\nRendimi strumento del Tuo amore verso ogni persona che incontrerò.\nAmen.",
     "allegati": [
-      { "tipo": "youtube", "nome": "Ascolta cantata", "url": "https://www.youtube.com/watch?v=ahovGGGKb-M" }
+      {
+        "tipo": "youtube",
+        "nome": "Ascolta cantata",
+        "url": "https://www.youtube.com/watch?v=ahovGGGKb-M"
+      }
     ],
     "immagini": [
       "media/madonna-1.jpg"
