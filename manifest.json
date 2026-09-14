@@ -1,8 +1,11 @@
 {
   "name": "Nel Sigillo del Dio Vivente",
   "short_name": "Sigillo",
+  "id": "/",
   "start_url": "/index.html",
+  "scope": "/",
   "display": "standalone",
+  "lang": "it-IT",
   "background_color": "#ffffff",
   "theme_color": "#1e3a8a",
   "orientation": "any",
