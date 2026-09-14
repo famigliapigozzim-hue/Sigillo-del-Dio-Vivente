@@ -22,12 +22,12 @@
 	[data-font="serif"] { --font-family-app: Georgia, "Times New Roman", "Noto Serif", "Liberation Serif", serif; }
 	* { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-family-app); -webkit-tap-highlight-color: transparent; }
 	body { background-color: var(--bg-primary); color: var(--text-primary); min-height: 100vh; padding-bottom: 2.5rem; transition: background-color .2s, color .2s; }
-body[data-section="canti"] { --accent: #2563eb; --accent-hover: #1d4ed8; }
-body[data-section="messaggi"] { --accent: #0284c7; --accent-hover: #0369a1; }
-body[data-section="preghiere"] { --accent: #7c3aed; --accent-hover: #6d28d9; }
-[data-theme="dark"] body[data-section="canti"] { --accent: #60a5fa; --accent-hover: #93c5fd; }
-[data-theme="dark"] body[data-section="messaggi"] { --accent: #38bdf8; --accent-hover: #7dd3fc; }
-[data-theme="dark"] body[data-section="preghiere"] { --accent: #a78bfa; --accent-hover: #c4b5fd; }
+		body[data-section="canti"] { --accent: #2563eb; --accent-hover: #1d4ed8; }
+		body[data-section="messaggi"] { --accent: #0284c7; --accent-hover: #0369a1; }
+		body[data-section="preghiere"] { --accent: #7c3aed; --accent-hover: #6d28d9; }
+		[data-theme="dark"] body[data-section="canti"] { --accent: #60a5fa; --accent-hover: #93c5fd; }
+		[data-theme="dark"] body[data-section="messaggi"] { --accent: #38bdf8; --accent-hover: #7dd3fc; }
+		[data-theme="dark"] body[data-section="preghiere"] { --accent: #a78bfa; --accent-hover: #c4b5fd; }
 	header { background-color: var(--accent); color: white; padding: 0.9rem 1rem; position: sticky; top: 0; z-index: 50; box-shadow: var(--card-shadow); }
 	.header-container { display: flex; justify-content: space-between; align-items: center; max-width: 700px; margin: 0 auto; gap: 0.75rem; }
 	.section-picker { display: flex; align-items: center; gap: 0.4rem; background: rgba(255,255,255,0.12); border: none; color: white; padding: 0.45rem 0.7rem; border-radius: 0.5rem; font-weight: 700; font-size: 0.95rem; cursor: pointer; }
