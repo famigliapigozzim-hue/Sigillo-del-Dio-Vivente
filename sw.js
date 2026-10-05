@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nel-sigillo-app-cache-v20260927-editor-02';
+const CACHE_NAME = 'nel-sigillo-app-cache-v20260928-anteprime-01';
 
 const ASSETS = [
   './',

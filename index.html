@@ -166,6 +166,10 @@ body[data-section="preghiere"] { --accent: #668FB8; --accent-hover: #547DA7; --s
 	.rosario-dot.filled { background-color: var(--accent); }
 	.rosario-tap-btn { background-color: var(--accent); color: white; border: none; padding: 1.1rem; border-radius: 0.75rem; font-size: 1.1rem; font-weight: 700; cursor: pointer; width: 100%; margin-bottom: 0.6rem; }
 	.rosario-reset { background: none; border: none; color: var(--text-muted); text-decoration: underline; font-size: 0.85rem; cursor: pointer; }
+	.rosario-reflection { text-align:left; background:var(--section-bg); border-left:3px solid var(--accent); border-radius:.45rem; padding:1rem; margin:.85rem 0 1.1rem; overflow-wrap:anywhere; }
+	.rosario-reflection h3 { color:var(--accent); font-size:1.05rem; margin:0 0 .55rem; }
+	.rosario-reflection .item-text { white-space:normal; line-height:1.65; }
+	.rosario-phase-btn { background:var(--accent); color:white; border:0; border-radius:.6rem; padding:.8rem 1rem; font-size:1rem; font-weight:650; width:100%; cursor:pointer; margin:.55rem 0; }
 	.rosario-complete { color: var(--accent); font-weight: 700; font-size: 1.15rem; margin: 0.5rem 0; }
 
 	/* Novena */
@@ -553,7 +557,7 @@ main { max-width: 1240px; }
 			{ campo: 'testo', label: 'Testo del messaggio', tipo: 'textarea', obbligatorio: true }
 		  ] },
 		{ id: 'preghiere', badge: '🙏', label: '🙏 Preghiere', file: 'preghiere.json', filtroField: 'categoria', filtroTipo: 'stringa',
-		  titoloField: 'titolo', sottotitolo: (it) => it.categoria || '', searchFields: ['titolo', 'categoria', 'testo'],
+		  titoloField: 'titolo', sottotitolo: (it) => it.categoria || '', searchFields: ['titolo', 'categoria', 'testo', 'riflessioneIntro', 'riflessioneFinale', 'riflessioniMisteri'],
 		  formFields: [
 			{ campo: 'titolo', label: 'Titolo', tipo: 'text', obbligatorio: true },
 			{ campo: 'categoria', label: 'Categoria', tipo: 'text' },
@@ -561,6 +565,9 @@ main { max-width: 1240px; }
 			{ campo: 'giorni', label: 'Numero giorni (solo per Novena)', tipo: 'number', soloNovena: true },
 			{ campo: 'testoIntro', label: 'Introduzione / testo iniziale', tipo: 'textarea', soloNovena: true },
 			{ campo: 'testiGiorni', label: 'Testi dei giorni della Novena', tipo: 'novenaDays', soloNovena: true },
+			{ campo: 'riflessioneIntro', label: 'Riflessione introduttiva del Rosario', tipo: 'textarea', soloRosario: true },
+			{ campo: 'riflessioniMisteri', label: 'Riflessioni per i cinque misteri', tipo: 'rosarioMysteries', soloRosario: true },
+			{ campo: 'riflessioneFinale', label: 'Riflessione / preghiera finale del Rosario', tipo: 'textarea', soloRosario: true },
 			{ campo: 'testo', label: 'Testo', tipo: 'textarea', obbligatorio: false, noNovena: true }
 		  ] }
 	];
@@ -937,6 +944,18 @@ main { max-width: 1240px; }
 		renderList(items, items.map(() => currentSectionId));
 	}
 
+	// Anteprima testuale: interpreta i tag solo per estrarre il testo, senza
+	// modificare l'HTML originale salvato né inserire HTML nella scheda.
+	function getPlainTextPreview(value, maxLength = 140) {
+		const html = String(value || '');
+		const spaced = html.replace(/<br\s*\/?\s*>/gi, ' ')
+			.replace(/<\/(?:div|p|li|h[1-6]|section|article)>/gi, ' ');
+		const doc = new DOMParser().parseFromString(spaced, 'text/html');
+		doc.querySelectorAll('script, style, template, noscript').forEach(el => el.remove());
+		const plain = (doc.body.textContent || '').replace(/\s+/g, ' ').trim();
+		return plain.length > maxLength ? plain.slice(0, maxLength).trimEnd() + '…' : plain;
+	}
+
 	// --- LISTA ---
 	function renderList(items, sections) {
 		const container = document.getElementById('items-list');
@@ -959,7 +978,7 @@ main { max-width: 1240px; }
 			const metaEl = document.createElement('div'); metaEl.className = 'item-card-meta'; metaEl.textContent = cfg.sottotitolo(item);
 			const titleEl = document.createElement('div'); titleEl.className = 'item-card-title'; titleEl.textContent = itemTitolo(sezione, item);
 			const snippetEl = document.createElement('div'); snippetEl.className = 'item-card-snippet';
-			snippetEl.textContent = (item.testo || item.testoIntro || '').replace(/\s+/g, ' ').slice(0, 140) + '...';
+			snippetEl.textContent = getPlainTextPreview(item.testo || item.testoIntro || '');
 			info.appendChild(metaEl); info.appendChild(titleEl); info.appendChild(snippetEl);
 
 			const actions = document.createElement('div'); actions.className = 'item-card-actions';
@@ -1120,33 +1139,64 @@ main { max-width: 1240px; }
 		return set.gloriosi;
 	}
 	function renderRosarioUI(container, item) {
-		rosario = { decade: 1, bead: 0 };
+		// Le riflessioni sono facoltative: i Rosari già archiviati continuano a funzionare.
+		rosario = { decade: 1, bead: 0, phase: 'intro' };
 		const misteri = misteriDelGiorno();
+		const riflessioni = Array.isArray(item.riflessioniMisteri) ? item.riflessioniMisteri : [];
 		const box = document.createElement('div'); box.className = 'rosario-box';
 		container.appendChild(box);
+		function reflection(title, value) {
+			if (!String(value || '').trim()) return;
+			const section = document.createElement('section'); section.className = 'rosario-reflection';
+			const heading = document.createElement('h3'); heading.textContent = title;
+			const text = document.createElement('div'); text.className = 'item-text';
+			text.innerHTML = richHtmlForDisplay(value);
+			section.appendChild(heading); section.appendChild(text); box.appendChild(section);
+		}
+		function action(label, handler) {
+			const button = document.createElement('button'); button.type = 'button';
+			button.className = 'rosario-phase-btn'; button.textContent = label;
+			button.onclick = () => { vibrate(15); handler(); draw(); };
+			box.appendChild(button);
+		}
 		function draw() {
-			box.innerHTML = '';
-			if (rosario.decade > 5) {
-				box.innerHTML = '<div class="rosario-complete">✅ Rosario completato! 🙏</div>';
-				const resetBtn = document.createElement('button'); resetBtn.className = 'rosario-reset'; resetBtn.textContent = '↺ Ricomincia'; resetBtn.onclick = () => { vibrate(); rosario = { decade: 1, bead: 0 }; draw(); };
-				box.appendChild(resetBtn);
+			box.replaceChildren();
+			if (rosario.phase === 'intro') {
+				const title = document.createElement('div'); title.className = 'rosario-misteri-title';
+				title.textContent = 'Introduzione — ' + misteri.nome; box.appendChild(title);
+				reflection('Riflessione introduttiva', item.riflessioneIntro || item.testoIntro || item.testo);
+				action('Inizia il primo mistero →', () => { rosario.phase = 'mysteries'; });
 				return;
 			}
-			const title = document.createElement('div'); title.className = 'rosario-misteri-title'; title.textContent = misteri.nome + ' (di oggi)';
+			if (rosario.phase === 'final') {
+				const title = document.createElement('div'); title.className = 'rosario-complete';
+				title.textContent = '🙏 Hai completato i cinque misteri'; box.appendChild(title);
+				reflection('Riflessione e preghiera finale', item.riflessioneFinale);
+				action('✓ Termina il Rosario', () => { rosario.phase = 'complete'; });
+				return;
+			}
+			if (rosario.phase === 'complete') {
+				const title = document.createElement('div'); title.className = 'rosario-complete';
+				title.textContent = '✅ Rosario completato! 🙏'; box.appendChild(title);
+				action('↺ Ricomincia', () => { rosario = { decade: 1, bead: 0, phase: 'intro' }; });
+				return;
+			}
+			const title = document.createElement('div'); title.className = 'rosario-misteri-title';
+			title.textContent = misteri.nome + ' (di oggi)'; box.appendChild(title);
 			const list = document.createElement('ul'); list.className = 'rosario-misteri-list';
 			misteri.lista.forEach((m, i) => { const li = document.createElement('li'); li.textContent = (i+1) + '. ' + m; if (i+1 === rosario.decade) li.className = 'corrente'; list.appendChild(li); });
-			const progress = document.createElement('div'); progress.className = 'rosario-progress'; progress.textContent = 'Decina ' + rosario.decade + ' di 5 — Ave Maria ' + rosario.bead + '/10';
+			box.appendChild(list);
+			reflection('Mistero ' + rosario.decade + ' — ' + misteri.lista[rosario.decade - 1], riflessioni[rosario.decade - 1]);
+			const progress = document.createElement('div'); progress.className = 'rosario-progress';
+			progress.textContent = 'Decina ' + rosario.decade + ' di 5 — Ave Maria ' + rosario.bead + '/10'; box.appendChild(progress);
 			const dots = document.createElement('div'); dots.className = 'rosario-dots';
-			for (let i=1;i<=10;i++){ const d=document.createElement('div'); d.className='rosario-dot'+(i<=rosario.bead?' filled':''); dots.appendChild(d); }
-			const tapBtn = document.createElement('button'); tapBtn.className = 'rosario-tap-btn'; tapBtn.textContent = '🙏 Ave Maria';
-			tapBtn.onclick = () => {
-				vibrate(15);
-				rosario.bead++;
-				if (rosario.bead >= 10) { rosario.decade++; rosario.bead = 0; }
-				draw();
-			};
-			const resetBtn = document.createElement('button'); resetBtn.className = 'rosario-reset'; resetBtn.textContent = '↺ Ricomincia'; resetBtn.onclick = () => { vibrate(); rosario = { decade: 1, bead: 0 }; draw(); };
-			box.appendChild(title); box.appendChild(list); box.appendChild(progress); box.appendChild(dots); box.appendChild(tapBtn); box.appendChild(resetBtn);
+			for (let i=1; i<=10; i++) { const dot = document.createElement('div'); dot.className = 'rosario-dot' + (i<=rosario.bead?' filled':''); dots.appendChild(dot); }
+			box.appendChild(dots);
+			const tap = document.createElement('button'); tap.className = 'rosario-tap-btn'; tap.textContent = '🙏 Ave Maria';
+			tap.onclick = () => { vibrate(15); rosario.bead++; if (rosario.bead >= 10) { rosario.decade++; rosario.bead = 0; if (rosario.decade > 5) rosario.phase = 'final'; } draw(); };
+			box.appendChild(tap);
+			const reset = document.createElement('button'); reset.className = 'rosario-reset'; reset.textContent = '↺ Ricomincia';
+			reset.onclick = () => { vibrate(); rosario = { decade: 1, bead: 0, phase: 'intro' }; draw(); }; box.appendChild(reset);
 		}
 		draw();
 	}
@@ -1474,9 +1524,15 @@ main { max-width: 1240px; }
 		(cfg.formFields || []).forEach((f) => {
 			const tipoCorrente=itemEsistente?.tipo||(cfg.id==='preghiere'?'semplice':'');
 			if(f.soloNovena&&tipoCorrente!=='novena')return;
+			if(f.soloRosario&&tipoCorrente!=='rosario')return;
 			if(f.noNovena&&tipoCorrente==='novena')return;
 			const wrap=document.createElement('div');wrap.className='form-field';const label=document.createElement('label');label.textContent=f.label+(f.obbligatorio?' *':'');wrap.appendChild(label);
 			const valoreIniziale=itemEsistente?itemEsistente[f.campo]:'';let input;
+			if(f.soloRosario)wrap.classList.add('rosario-editor-only');
+			if(f.tipo==='rosarioMysteries'){
+				const holder=document.createElement('div');holder.className='novena-editor-days';holder.id='campo-riflessioniMisteri';const values=Array.isArray(valoreIniziale)?valoreIniziale:[];
+				for(let i=0;i<5;i++){const dw=document.createElement('div');dw.className='novena-editor-day';const dl=document.createElement('label');dl.textContent='Riflessione mistero '+(i+1);const rich=createRichEditor(values[i]||'', 'campo-riflessioniMisteri-'+(i+1));rich.hidden.dataset.rosarioMystery=String(i+1);dw.appendChild(dl);dw.appendChild(rich.editor);dw.appendChild(rich.help);holder.appendChild(dw);}wrap.appendChild(holder);container.appendChild(wrap);return;
+			}
 			if(f.tipo==='novenaDays'){
 				const days=Math.max(1,Math.min(31,Number(itemEsistente?.giorni||9))),holder=document.createElement('div');holder.className='novena-editor-days';holder.id='campo-testiGiorni';const values=Array.isArray(valoreIniziale)?valoreIniziale:[];
 				for(let i=0;i<days;i++){const dw=document.createElement('div');dw.className='novena-editor-day';const dl=document.createElement('label');dl.textContent='Giorno '+(i+1);const rich=createRichEditor(values[i]||'', 'campo-testiGiorni-'+(i+1), i+1); rich.hidden.dataset.novenaDay=String(i+1); dw.appendChild(dl); dw.appendChild(rich.editor); dw.appendChild(rich.help); holder.appendChild(dw);}wrap.appendChild(holder);container.appendChild(wrap);return;
@@ -1488,7 +1544,17 @@ main { max-width: 1240px; }
 		});
 		function refreshPrayerEditorFields(){
 			if(cfg.id!=='preghiere')return;const tipo=document.getElementById('campo-tipo')?.value||'semplice';
-			container.querySelectorAll('.novena-editor-only').forEach(e=>e.remove());if(tipo!=='novena')return;
+			container.querySelectorAll('.novena-editor-only').forEach(e=>e.remove());
+			container.querySelectorAll('.rosario-editor-only').forEach(e=>{e.style.display=tipo==='rosario'?'':'none';});
+			container.querySelectorAll('.form-field').forEach(w=>{const el=w.querySelector('[data-campo]');if(el?.dataset.campo==='testo')w.style.display=tipo==='novena'?'none':'';});
+			if(tipo==='rosario'){
+				const original=moduloContenutoStato?.itemOriginale||{};
+				const addRich=(label,field,value)=>{const wrap=document.createElement('div');wrap.className='form-field rosario-editor-only';const l=document.createElement('label');l.textContent=label;const rich=createRichEditor(value||'','campo-'+field);wrap.appendChild(l);wrap.appendChild(rich.editor);wrap.appendChild(rich.help);container.appendChild(wrap);};
+				if(!document.getElementById('campo-riflessioneIntro'))addRich('Riflessione introduttiva','riflessioneIntro',original.riflessioneIntro);
+				if(!document.getElementById('campo-riflessioniMisteri')){const wrap=document.createElement('div');wrap.className='form-field rosario-editor-only';const l=document.createElement('label');l.textContent='Riflessioni per i cinque misteri';wrap.appendChild(l);const holder=document.createElement('div');holder.id='campo-riflessioniMisteri';holder.className='novena-editor-days';for(let i=0;i<5;i++){const dw=document.createElement('div');dw.className='novena-editor-day';const dl=document.createElement('label');dl.textContent='Riflessione mistero '+(i+1);const rich=createRichEditor(original.riflessioniMisteri?.[i]||'','campo-riflessioniMisteri-'+(i+1));rich.hidden.dataset.rosarioMystery=String(i+1);dw.appendChild(dl);dw.appendChild(rich.editor);dw.appendChild(rich.help);holder.appendChild(dw);}wrap.appendChild(holder);container.appendChild(wrap);}
+				if(!document.getElementById('campo-riflessioneFinale'))addRich('Riflessione / preghiera finale','riflessioneFinale',original.riflessioneFinale);
+			}
+			if(tipo!=='novena')return;
 			const daysWrap=document.createElement('div');daysWrap.className='form-field novena-editor-only';const l=document.createElement('label');l.textContent='Testi dei giorni della Novena';daysWrap.appendChild(l);const holder=document.createElement('div');holder.className='novena-editor-days';holder.id='campo-testiGiorni';const days=Math.max(1,Math.min(31,Number(document.getElementById('campo-giorni')?.value||9)));
 			for(let i=0;i<days;i++){const dw=document.createElement('div');dw.className='novena-editor-day';const dl=document.createElement('label');dl.textContent='Giorno '+(i+1);const rich=createRichEditor('', 'campo-testiGiorni-'+(i+1), i+1); rich.hidden.dataset.novenaDay=String(i+1); dw.appendChild(dl); dw.appendChild(rich.editor); dw.appendChild(rich.help); holder.appendChild(dw);}daysWrap.appendChild(holder);container.appendChild(daysWrap);
 		}
@@ -1510,12 +1576,12 @@ main { max-width: 1240px; }
 		erroreEl.style.display = 'none';
 
 		const item = moduloContenutoStato.modalita === 'modifica'
-			? { id: moduloContenutoStato.itemOriginale.id }
+			? { ...moduloContenutoStato.itemOriginale }
 			: {};
 		let mancaObbligatorio = false;
 		(cfg.formFields || []).forEach((f) => {
 			const el = document.getElementById('campo-' + f.campo);
-			if (!el) return;
+			if (!el || f.tipo==='novenaDays' || f.tipo==='rosarioMysteries') return;
 			let valore = el.dataset.richHidden==='true' && el.dataset.richDirty!=='true' ? el.value : el.value.trim();
 			if (f.tipo === 'tags') {
 				item[f.campo] = valore ? valore.split(',').map((s) => s.trim()).filter(Boolean) : [];
@@ -1527,8 +1593,12 @@ main { max-width: 1240px; }
 			if (f.obbligatorio && !valore) mancaObbligatorio = true;
 		});
 		if(cfg.id==='preghiere'){
+			if(item.tipo==='rosario'){
+				item.riflessioniMisteri=Array.from(document.querySelectorAll('#campo-riflessioniMisteri textarea[data-rosario-mystery]')).slice(0,5).map(el=>el.value);
+				item.riflessioneIntro=item.riflessioneIntro||'';item.riflessioneFinale=item.riflessioneFinale||'';
+			}
 			if(item.tipo==='novena'){item.giorni=Math.max(1,Math.min(31,Number(item.giorni)||9));item.testiGiorni=Array.from(document.querySelectorAll('#campo-testiGiorni textarea[data-novena-day]')).slice(0,item.giorni).map(el=>el.value);item.testoIntro=item.testoIntro||'';}
-			else if(!String(item.testo||'').trim())mancaObbligatorio=true;
+			else if(item.tipo!=='rosario'&&!String(item.testo||'').trim())mancaObbligatorio=true;
 		}
 		if(mancaObbligatorio){erroreEl.textContent='Compila tutti i campi obbligatori (*).';erroreEl.style.display='block';return;}
 		if(moduloContenutoStato.modalita==='aggiungi'&&!item.id)item.id=(crypto.randomUUID?crypto.randomUUID():('item-'+Date.now()+'-'+Math.random().toString(36).slice(2)));
